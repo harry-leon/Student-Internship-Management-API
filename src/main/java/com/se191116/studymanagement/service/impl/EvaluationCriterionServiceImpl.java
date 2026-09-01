@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +22,7 @@ public class EvaluationCriterionServiceImpl implements EvaluationCriterionServic
     private final EvaluationCriterionMapper evaluationCriterionMapper;
 
     @Override
+    @Transactional
     public EvaluationCriterionResponse createEvaluationCriterion(EvaluationCriterionCreateRequest request) {
         if(evaluationCriterionRepository.findByCriterionName(request.getCriterionName()).isPresent()) {
             throw new ResourceConflictException("Criterion name already");
@@ -30,6 +32,7 @@ public class EvaluationCriterionServiceImpl implements EvaluationCriterionServic
     }
 
     @Override
+    @Transactional
     public EvaluationCriterionResponse updateEvaluationCriterion(Integer criterionId, EvaluationCriterionUpdateRequest request) {
         EvaluationCriterion existingCriterion = evaluationCriterionRepository.findById(criterionId)
                 .orElseThrow(()-> new ResourceNotFoundException("Not found Criterion id"));
@@ -43,6 +46,7 @@ public class EvaluationCriterionServiceImpl implements EvaluationCriterionServic
     }
 
     @Override
+    @Transactional
     public void deleteEvaluationCriterion(Integer criterionId) {
         EvaluationCriterion existingCriterion = evaluationCriterionRepository.findById(criterionId)
                 .orElseThrow(()-> new ResourceNotFoundException("Not found Criterion id"));

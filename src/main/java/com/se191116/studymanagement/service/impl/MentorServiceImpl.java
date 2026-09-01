@@ -21,6 +21,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +31,7 @@ public class MentorServiceImpl implements MentorService {
     private final UserRepository userRepository;
 
     @Override
+    @Transactional
     public MentorResponse createMentor(MentorCreateRequest request) {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + request.getUserId()));
@@ -47,6 +49,7 @@ public class MentorServiceImpl implements MentorService {
     }
 
     @Override
+    @Transactional
     public MentorResponse updateMentor(Integer mentorId, MentorUpdateRequest request) {
         Mentor existingMentor = mentorRepository.findById(mentorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Mentor not found with ID: " + mentorId));

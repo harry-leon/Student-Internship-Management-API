@@ -21,6 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +31,7 @@ public class StudentServiceImpl implements StudentService {
     private final UserRepository userRepository;
 
     @Override
+    @Transactional
     public StudentResponse createStudent(StudentCreateRequest request) {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + request.getUserId()));
@@ -51,6 +53,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    @Transactional
     public StudentResponse updateStudent(Integer studentId, StudentUpdateRequest request) {
         User currentUser = getCurrentUser();
         if (currentUser.getRole() == UserRole.STUDENT && !currentUser.getUserId().equals(studentId)) {
