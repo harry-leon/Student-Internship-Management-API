@@ -1,0 +1,13 @@
+package com.se191116.studymanagement.exception;
+
+public enum ErrorCode {
+    INVALID_INPUT_DATA,
+    DUPLICATE_RESOURCE,
+    EXPIRED_JWT_TOKEN,
+    INVALID_JWT_TOKEN,
+    BAD_CREDENTIALS,
+    ACCESS_DENIED,
+    RESOURCE_NOT_FOUND,
+    INVALID_ASSIGNMENT_STATE,
+    INTERNAL_SERVER_ERROR
+}
