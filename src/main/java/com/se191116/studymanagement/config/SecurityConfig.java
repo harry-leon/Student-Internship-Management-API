@@ -2,6 +2,7 @@ package com.se191116.studymanagement.config;
 
 import com.se191116.studymanagement.security.CustomUserDetailsService;
 import com.se191116.studymanagement.security.jwt.JwtAuthFilter;
+import com.se191116.studymanagement.security.jwt.JwtEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,10 +23,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final CustomUserDetailsService customUserDetailsService;
+    private final JwtEntryPoint jwtEntryPoint;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter, CustomUserDetailsService customUserDetailsService) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter, CustomUserDetailsService customUserDetailsService, JwtEntryPoint jwtEntryPoint) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.customUserDetailsService = customUserDetailsService;
+        this.jwtEntryPoint = jwtEntryPoint;
     }
 
     @Bean
@@ -34,6 +37,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtEntryPoint))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login").permitAll()
                         .anyRequest().authenticated()
