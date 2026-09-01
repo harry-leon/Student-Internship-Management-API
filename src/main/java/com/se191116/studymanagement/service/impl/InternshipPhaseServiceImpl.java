@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
@@ -24,6 +25,7 @@ public class InternshipPhaseServiceImpl implements InternshipPhaseService {
     private final InternshipPhaseMapper internshipPhaseMapper;
 
     @Override
+    @Transactional
     public InternshipPhaseResponse createInternshipPhase(InternshipPhaseCreateRequest request) {
         validateDateRange(request.getStartDate(), request.getEndDate());
 
@@ -37,6 +39,7 @@ public class InternshipPhaseServiceImpl implements InternshipPhaseService {
     }
 
     @Override
+    @Transactional
     public InternshipPhaseResponse updateInternshipPhase(Integer phaseId, InternshipPhaseUpdateRequest request) {
         InternshipPhase existingPhase = internshipPhaseRepository.findById(phaseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Internship phase not found with ID: " + phaseId));
@@ -55,6 +58,7 @@ public class InternshipPhaseServiceImpl implements InternshipPhaseService {
     }
 
     @Override
+    @Transactional
     public void deleteInternshipPhase(Integer phaseId) {
         InternshipPhase existingPhase = internshipPhaseRepository.findById(phaseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Internship phase not found with ID: " + phaseId));
