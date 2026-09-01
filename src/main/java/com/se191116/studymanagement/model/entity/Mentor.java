@@ -12,33 +12,34 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "mentors")
+@Table(name = "Mentors")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 public class Mentor {
     @Id
+    @Column(name = "MentorID")
     private Integer mentorId;
 
     @OneToOne
     @MapsId
-    @JoinColumn(name = "mentor_id")
+    @JoinColumn(name = "MentorID")
     private User user;
 
     @Size(max = 100, message = "Department must be at most 100 characters")
-    @Column(nullable = true, length = 100)
+    @Column(name = "Department", length = 100)
     private String department;
 
     @Size(max = 50, message = "Academic rank must be at most 50 characters")
-    @Column(nullable = true, length = 50)
+    @Column(name = "AcademicRank", length = 50)
     private String academicRank;
 
     @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @Column(name = "CreatedAt", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(nullable = false)
+    @Column(name = "UpdatedAt", nullable = false)
     private LocalDateTime updatedAt;
 }

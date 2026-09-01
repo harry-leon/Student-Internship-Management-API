@@ -19,7 +19,14 @@ public interface StudentMapper {
 
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "studentId", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     Student toStudent(StudentCreateRequest request);
 
+    @Mapping(target = "studentId", ignore = true)
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "studentCode", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     void updateStudentFromRequest(StudentUpdateRequest request, @MappingTarget Student student);
 }

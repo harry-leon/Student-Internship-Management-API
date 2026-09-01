@@ -1,5 +1,6 @@
 package com.se191116.studymanagement.service.impl;
 
+import com.se191116.studymanagement.exception.ResourceNotFoundException;
 import com.se191116.studymanagement.model.dto.request.LoginRequest;
 import com.se191116.studymanagement.model.dto.response.LoginResponse;
 import com.se191116.studymanagement.model.dto.response.UserResponse;
@@ -42,7 +43,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public UserResponse getCurrentUser(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return userMapper.toUserResponse(user);
     }
 }

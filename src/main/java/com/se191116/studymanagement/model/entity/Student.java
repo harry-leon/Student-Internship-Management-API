@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "students")
+@Table(name = "Students")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -19,38 +19,39 @@ import java.time.LocalDateTime;
 @Builder
 public class Student {
     @Id
+    @Column(name = "StudentID")
     private int studentId;
 
     @OneToOne
     @MapsId
-    @JoinColumn(name = "student_id")
+    @JoinColumn(name = "StudentID")
     private User user;
 
     @NotBlank(message = "Student code must not be blank")
     @Size(max = 20, message = "Student code must be at most 20 characters")
-    @Column(nullable = false, unique = true, length = 20)
+    @Column(name = "StudentCode", nullable = false, unique = true, length = 20)
     private String studentCode;
 
     @Size(max = 100, message = "Major must be at most 100 characters")
-    @Column(nullable = true, length = 100)
+    @Column(name = "Major", length = 100)
     private String major;
 
     @Size(max = 50, message = "Class name must be at most 50 characters")
-    @Column(nullable = true, length = 50)
+    @Column(name = "Class", length = 50)
     private String className;
 
-    @Column(nullable = true)
+    @Column(name = "DateOfBirth")
     private LocalDate dateOfBirth;
 
     @Size(max = 255, message = "Address must be at most 255 characters")
-    @Column(nullable = true, length = 255)
+    @Column(name = "Address", length = 255)
     private String address;
 
     @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @Column(name = "CreatedAt", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(nullable = false)
+    @Column(name = "UpdatedAt", nullable = false)
     private LocalDateTime updatedAt;
 }

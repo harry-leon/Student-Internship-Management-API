@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "evaluation_criteria")
+@Table(name = "EvaluationCriteria")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -22,27 +22,27 @@ import java.time.LocalDateTime;
 public class EvaluationCriterion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "CriterionID")
     private Integer criterionId;
 
     @NotBlank(message = "Criterion name must not be blank")
     @Size(max = 200, message = "Criterion name must be at most 200 characters")
-    @Column(nullable = false, unique = true, length = 200)
+    @Column(name = "CriterionName", nullable = false, unique = true, length = 200)
     private String criterionName;
 
-    @Size(max = 1000, message = "Description must be at most 1000 characters")
-    @Column(columnDefinition = "NVARCHAR(MAX)")
+    @Column(name = "Description", columnDefinition = "TEXT")
     private String description;
 
     @NotNull(message = "Max score must not be null")
     @DecimalMin(value = "0.01", message = "Max score must be greater than 0")
-    @Column(nullable = false, precision = 5, scale = 2)
+    @Column(name = "MaxScore", nullable = false, precision = 5, scale = 2)
     private BigDecimal maxScore;
 
     @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @Column(name = "CreatedAt", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(nullable = false)
+    @Column(name = "UpdatedAt", nullable = false)
     private LocalDateTime updatedAt;
 }

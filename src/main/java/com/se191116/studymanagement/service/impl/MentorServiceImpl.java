@@ -1,5 +1,8 @@
 package com.se191116.studymanagement.service.impl;
 
+import com.se191116.studymanagement.exception.BusinessException;
+import com.se191116.studymanagement.exception.ResourceConflictException;
+import com.se191116.studymanagement.exception.ResourceNotFoundException;
 import com.se191116.studymanagement.model.dto.request.MentorCreateRequest;
 import com.se191116.studymanagement.model.dto.request.MentorUpdateRequest;
 import com.se191116.studymanagement.model.dto.response.MentorResponse;
@@ -19,8 +22,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.rmi.AccessException;
-
 @Service
 @RequiredArgsConstructor
 public class MentorServiceImpl implements MentorService {
@@ -31,14 +32,13 @@ public class MentorServiceImpl implements MentorService {
     @Override
     public MentorResponse createMentor(MentorCreateRequest request) {
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + request.getUserId()));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + request.getUserId()));
 
         if (user.getRole() != UserRole.MENTOR) {
-            throw new IllegalArgumentException("The selected user does not have MENTOR role");
+            throw new BusinessException("The selected user does not have MENTOR role");
         }
-
         if (mentorRepository.existsById(user.getUserId())) {
-            throw new IllegalArgumentException("A mentor profile already exists for this user");
+            throw new ResourceConflictException("A mentor profile already exists for this user");
         }
 
         Mentor newMentor = mentorMapper.toMentor(request);
@@ -49,7 +49,7 @@ public class MentorServiceImpl implements MentorService {
     @Override
     public MentorResponse updateMentor(Integer mentorId, MentorUpdateRequest request) {
         Mentor existingMentor = mentorRepository.findById(mentorId)
-                .orElseThrow(() -> new IllegalArgumentException("Mentor not found with ID: " + mentorId));
+                .orElseThrow(() -> new ResourceNotFoundException("Mentor not found with ID: " + mentorId));
 
         User user = getCurrentUser();
         if(user.getRole() == UserRole.MENTOR && !user.getUserId().equals(mentorId)){
@@ -63,7 +63,7 @@ public class MentorServiceImpl implements MentorService {
     @Override
     public MentorResponse getMentorById(Integer mentorId) {
         Mentor existingMentor = mentorRepository.findById(mentorId)
-                .orElseThrow(() -> new IllegalArgumentException("Mentor not found with ID: " + mentorId));
+                .orElseThrow(() -> new ResourceNotFoundException("Mentor not found with ID: " + mentorId));
 
         User user = getCurrentUser();
         if(user.getRole() == UserRole.MENTOR && !user.getUserId().equals(mentorId)){
