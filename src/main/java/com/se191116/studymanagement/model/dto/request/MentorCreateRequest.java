@@ -1,5 +1,6 @@
 package com.se191116.studymanagement.model.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -9,7 +10,7 @@ public class MentorCreateRequest {
     @NotNull(message = "User ID must not be null")
     private Integer userId;
 
-    @NotNull(message = "Department must not be null")
+    @NotBlank(message = "Department must not be null")
     @Size(max = 100, message = "Department must be at most 100 characters")
     private String department;
 

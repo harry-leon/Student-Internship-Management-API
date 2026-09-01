@@ -15,7 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "internship_phases")
+@Table(name = "InternshipPhases")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -23,29 +23,30 @@ import java.time.LocalDateTime;
 public class InternshipPhase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "PhaseID")
     private Integer phaseId;
 
     @NotBlank(message = "Phase name must not be blank")
     @Size(max = 100, message = "Phase name must be at most 100 characters")
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(name = "PhaseName", nullable = false, unique = true, length = 100)
     private String phaseName;
 
     @NotNull(message = "Start date must not be null")
-    @Column(nullable = false)
+    @Column(name = "StartDate", nullable = false)
     private LocalDate startDate;
 
     @NotNull(message = "End date must not be null")
-    @Column(nullable = false)
+    @Column(name = "EndDate", nullable = false)
     private LocalDate endDate;
 
-    @Column(columnDefinition = "NVARCHAR(MAX)")
+    @Column(name = "Description", columnDefinition = "TEXT")
     private String description;
 
     @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @Column(name = "CreatedAt", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(nullable = false)
+    @Column(name = "UpdatedAt", nullable = false)
     private LocalDateTime updatedAt;
 }

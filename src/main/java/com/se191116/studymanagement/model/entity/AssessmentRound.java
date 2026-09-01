@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "assessment_rounds")
+@Table(name = "AssessmentRounds")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -19,34 +19,39 @@ import java.time.LocalDateTime;
 public class AssessmentRound {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "RoundID")
     private Integer roundId;
 
     @ManyToOne
-    @JoinColumn(name = "phase_id", nullable = false)
+    @JoinColumn(name = "PhaseID", nullable = false)
     private InternshipPhase phase;
 
     @NotBlank(message = "Round name must not be blank")
     @Size(max = 100, message = "Round name must be at most 100 characters")
-    @Column(length = 100, nullable = false)
+    @Column(name = "RoundName", length = 100, nullable = false)
     private String roundName;
 
     @NotNull(message = "Start date must not be null")
-    @Column(nullable = false)
+    @Column(name = "StartDate", nullable = false)
     private LocalDate startDate;
 
     @NotNull(message = "End date must not be null")
-    @Column(nullable = false)
+    @Column(name = "EndDate", nullable = false)
     private LocalDate endDate;
 
-    @Size(max = 1000, message = "Description must be at most 1000 characters")
-    @Column(columnDefinition = "NVARCHAR(MAX)")
+    @Column(name = "Description", columnDefinition = "TEXT")
     private String description;
 
+    @NotNull
+    @Column(name = "IsActive", nullable = false)
+    @Builder.Default
+    private Boolean isActive = true;
+
     @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @Column(name = "CreatedAt", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(nullable = false)
+    @Column(name = "UpdatedAt", nullable = false)
     private LocalDateTime updatedAt;
 }

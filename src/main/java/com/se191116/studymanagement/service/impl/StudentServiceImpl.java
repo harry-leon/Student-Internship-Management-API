@@ -1,5 +1,8 @@
 package com.se191116.studymanagement.service.impl;
 
+import com.se191116.studymanagement.exception.BusinessException;
+import com.se191116.studymanagement.exception.ResourceConflictException;
+import com.se191116.studymanagement.exception.ResourceNotFoundException;
 import com.se191116.studymanagement.model.dto.request.StudentCreateRequest;
 import com.se191116.studymanagement.model.dto.request.StudentUpdateRequest;
 import com.se191116.studymanagement.model.dto.response.StudentResponse;
@@ -27,6 +30,54 @@ public class StudentServiceImpl implements StudentService {
     private final UserRepository userRepository;
 
     @Override
+    public StudentResponse createStudent(StudentCreateRequest request) {
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + request.getUserId()));
+
+        // check lai trc khi tao
+        if (user.getRole() != UserRole.STUDENT) {
+            throw new BusinessException("The selected user does not have STUDENT role");
+        }
+        if (studentRepository.existsById(user.getUserId())) {
+            throw new ResourceConflictException("A student profile already exists for this user");
+        }
+        if (studentRepository.findByStudentCode(request.getStudentCode()).isPresent()) {
+            throw new ResourceConflictException("Student code already exists");
+        }
+
+        Student newStudent = studentMapper.toStudent(request);
+        newStudent.setUser(user);
+        return studentMapper.toStudentResponse(studentRepository.save(newStudent));
+    }
+
+    @Override
+    public StudentResponse updateStudent(Integer studentId, StudentUpdateRequest request) {
+        User currentUser = getCurrentUser();
+        if (currentUser.getRole() == UserRole.STUDENT && !currentUser.getUserId().equals(studentId)) {
+            throw new AccessDeniedException("Don't access in info other students!");
+        }
+        
+        Student existingStudent = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with ID: " + studentId));
+        studentMapper.updateStudentFromRequest(request, existingStudent);
+
+        return studentMapper.toStudentResponse(studentRepository.save(existingStudent));
+    }
+
+    @Override
+    public StudentResponse getStudentById(Integer studentId) {
+        User currentUser = getCurrentUser();
+        if (currentUser.getRole() == UserRole.STUDENT && !currentUser.getUserId().equals(studentId)) {
+            throw new AccessDeniedException("Don't access in info other students!");
+        }
+
+        Student existingStudent = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with ID: " + studentId));
+
+        return studentMapper.toStudentResponse(existingStudent);
+    }
+
+    @Override
     public Page<StudentResponse> getStudents(Pageable pageable) {
         User currentUser = getCurrentUser(); // Lay user dang dang nhap
         Page<Student> students;
@@ -36,50 +87,6 @@ public class StudentServiceImpl implements StudentService {
             students = studentRepository.findAll(pageable);
         }
         return students.map(studentMapper::toStudentResponse);
-    }
-
-    @Override
-    public StudentResponse getStudentById(Integer studentId) {
-        User currentUser = getCurrentUser();
-        if (currentUser.getRole() == UserRole.STUDENT && !currentUser.getUserId().equals(studentId)) {
-            throw new AccessDeniedException("Don't access in info other students!");
-        }
-        Student existingStudent = studentRepository.findById(studentId)
-                    .orElseThrow(() -> new IllegalArgumentException("Student not found with ID: " + studentId));
-        return studentMapper.toStudentResponse(existingStudent);
-    }
-
-    @Override
-    public StudentResponse updateStudent(Integer studentId, StudentUpdateRequest request) {
-        User currentUser = getCurrentUser();
-        if (currentUser.getRole() == UserRole.STUDENT && !currentUser.getUserId().equals(studentId)) {
-            throw new AccessDeniedException("Don't access in info other students!");
-        }
-        Student existingStudent = studentRepository.findById(studentId)
-                .orElseThrow(() -> new IllegalArgumentException("Student not found with ID: " + studentId));
-        studentMapper.updateStudentFromRequest(request, existingStudent);
-        return studentMapper.toStudentResponse(studentRepository.save(existingStudent));
-    }
-
-    @Override
-    public StudentResponse createStudent(StudentCreateRequest request) {
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + request.getUserId()));
-        // check lai trc khi tao
-        if (user.getRole() != UserRole.STUDENT) {
-            throw new IllegalArgumentException("The selected user does not have STUDENT role");
-        }
-        if (studentRepository.existsById(user.getUserId())) {
-            throw new IllegalArgumentException("A student profile already exists for this user");
-        }
-        if (studentRepository.findByStudentCode(request.getStudentCode()).isPresent()) {
-            throw new IllegalArgumentException("Student code already exists");
-        }
-
-        Student newStudent = studentMapper.toStudent(request);
-        newStudent.setUser(user);
-
-        return studentMapper.toStudentResponse(studentRepository.save(newStudent));
     }
 
     private User getCurrentUser() {

@@ -7,11 +7,8 @@ import com.se191116.studymanagement.model.entity.UserRole;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-
 public interface UserService {
     Page<UserResponse> getUsers(Pageable pageable);
-    List<UserResponse> getAllUsers();
     UserResponse getUserById(Integer userId);
     UserResponse createUser(UserCreateRequest request);
     UserResponse updateUser(Integer userId, UserUpdateRequest request);

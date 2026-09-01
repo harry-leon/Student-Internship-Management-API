@@ -1,4 +1,4 @@
-﻿package com.se191116.studymanagement.model.dto.request;
+package com.se191116.studymanagement.model.dto.request;
 
 import jakarta.validation.constraints.Size;
 import lombok.Data;
