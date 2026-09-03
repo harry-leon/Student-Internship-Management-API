@@ -1,7 +1,7 @@
 package com.se191116.studymanagement.controller;
 
 import com.se191116.studymanagement.model.dto.request.LoginRequest;
-import com.se191116.studymanagement.model.dto.response.ApiResponse;
+import com.se191116.studymanagement.model.dto.response.SuccessResponse;
 import com.se191116.studymanagement.model.dto.response.LoginResponse;
 import com.se191116.studymanagement.model.dto.response.UserResponse;
 import com.se191116.studymanagement.service.AuthService;
@@ -23,15 +23,15 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody @Valid LoginRequest request) {
+    public ResponseEntity<SuccessResponse<LoginResponse>> login(@RequestBody @Valid LoginRequest request) {
         LoginResponse loginResponse = authService.login(request);
-        return ResponseEntity.ok(ApiResponse.success(loginResponse, "Login successful"));
+        return ResponseEntity.ok(SuccessResponse.success(loginResponse, "Login successful"));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','MENTOR','STUDENT')")
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<UserResponse>> getCurrentUser(Authentication authentication) {
+    public ResponseEntity<SuccessResponse<UserResponse>> getCurrentUser(Authentication authentication) {
         UserResponse currentUser = authService.getCurrentUser(authentication.getName());
-        return ResponseEntity.ok(ApiResponse.success(currentUser, "Current user retrieved successfully"));
+        return ResponseEntity.ok(SuccessResponse.success(currentUser, "Current user retrieved successfully"));
     }
 }

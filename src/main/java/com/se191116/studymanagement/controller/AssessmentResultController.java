@@ -2,7 +2,7 @@ package com.se191116.studymanagement.controller;
 
 import com.se191116.studymanagement.model.dto.request.AssessmentResultCreateRequest;
 import com.se191116.studymanagement.model.dto.request.AssessmentResultUpdateRequest;
-import com.se191116.studymanagement.model.dto.response.ApiResponse;
+import com.se191116.studymanagement.model.dto.response.SuccessResponse;
 import com.se191116.studymanagement.model.dto.response.AssessmentResultResponse;
 import com.se191116.studymanagement.service.AssessmentResultService;
 import jakarta.validation.Valid;
@@ -30,7 +30,7 @@ public class AssessmentResultController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<AssessmentResultResponse>>> getAssessmentResults(
+    public ResponseEntity<SuccessResponse<Page<AssessmentResultResponse>>> getAssessmentResults(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "resultId") String sortBy,
@@ -40,7 +40,7 @@ public class AssessmentResultController {
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(SuccessResponse.success(
                 assessmentResultService.getAssessmentResults(pageable),
                 "Assessment results retrieved successfully"
         ));
@@ -48,10 +48,10 @@ public class AssessmentResultController {
 
     @PreAuthorize("hasRole('MENTOR')")
     @PostMapping
-    public ResponseEntity<ApiResponse<AssessmentResultResponse>> createAssessmentResult(
+    public ResponseEntity<SuccessResponse<AssessmentResultResponse>> createAssessmentResult(
             @RequestBody @Valid AssessmentResultCreateRequest request
     ) {
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(SuccessResponse.success(
                 assessmentResultService.createAssessmentResult(request),
                 "Assessment result created successfully"
         ));
@@ -59,11 +59,11 @@ public class AssessmentResultController {
 
     @PreAuthorize("hasRole('MENTOR')")
     @PutMapping("/{result_id}")
-    public ResponseEntity<ApiResponse<AssessmentResultResponse>> updateAssessmentResult(
+    public ResponseEntity<SuccessResponse<AssessmentResultResponse>> updateAssessmentResult(
             @PathVariable("result_id") Integer resultId,
             @RequestBody @Valid AssessmentResultUpdateRequest request
     ) {
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(SuccessResponse.success(
                 assessmentResultService.updateAssessmentResult(resultId, request),
                 "Assessment result updated successfully"
         ));

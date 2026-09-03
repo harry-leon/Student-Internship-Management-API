@@ -2,7 +2,7 @@ package com.se191116.studymanagement.controller;
 
 import com.se191116.studymanagement.model.dto.request.AssessmentRoundCreateRequest;
 import com.se191116.studymanagement.model.dto.request.AssessmentRoundUpdateRequest;
-import com.se191116.studymanagement.model.dto.response.ApiResponse;
+import com.se191116.studymanagement.model.dto.response.SuccessResponse;
 import com.se191116.studymanagement.model.dto.response.AssessmentRoundResponse;
 import com.se191116.studymanagement.service.AssessmentRoundService;
 import jakarta.validation.Valid;
@@ -23,7 +23,7 @@ public class AssessmentRoundController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<AssessmentRoundResponse>>> getAssessmentRounds(
+    public ResponseEntity<SuccessResponse<Page<AssessmentRoundResponse>>> getAssessmentRounds(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "roundId") String sortBy,
@@ -36,15 +36,15 @@ public class AssessmentRoundController {
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<AssessmentRoundResponse> rounds = assessmentRoundService.getAssessmentRound(pageable);
 
-        return ResponseEntity.ok(ApiResponse.success(rounds, "Assessment rounds retrieved successfully"));
+        return ResponseEntity.ok(SuccessResponse.success(rounds, "Assessment rounds retrieved successfully"));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
     @GetMapping("/{round_id}")
-    public ResponseEntity<ApiResponse<AssessmentRoundResponse>> getAssessmentRoundById(
+    public ResponseEntity<SuccessResponse<AssessmentRoundResponse>> getAssessmentRoundById(
             @PathVariable("round_id") Integer roundId
     ) {
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(SuccessResponse.success(
                 assessmentRoundService.getAssessmentRoundById(roundId),
                 "Assessment round retrieved successfully"
         ));
@@ -52,10 +52,10 @@ public class AssessmentRoundController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<ApiResponse<AssessmentRoundResponse>> createAssessmentRound(
+    public ResponseEntity<SuccessResponse<AssessmentRoundResponse>> createAssessmentRound(
             @RequestBody @Valid AssessmentRoundCreateRequest request
     ) {
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(SuccessResponse.success(
                 assessmentRoundService.createAssessmentRound(request),
                 "Assessment round created successfully"
         ));
@@ -63,11 +63,11 @@ public class AssessmentRoundController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{round_id}")
-    public ResponseEntity<ApiResponse<AssessmentRoundResponse>> updateAssessmentRound(
+    public ResponseEntity<SuccessResponse<AssessmentRoundResponse>> updateAssessmentRound(
             @PathVariable("round_id") Integer roundId,
             @RequestBody @Valid AssessmentRoundUpdateRequest request
     ) {
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(SuccessResponse.success(
                 assessmentRoundService.updateAssessmentRound(roundId, request),
                 "Assessment round updated successfully"
         ));
@@ -75,10 +75,10 @@ public class AssessmentRoundController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{round_id}")
-    public ResponseEntity<ApiResponse<String>> deleteAssessmentRound(
+    public ResponseEntity<SuccessResponse<String>> deleteAssessmentRound(
             @PathVariable("round_id") Integer roundId
     ) {
         assessmentRoundService.deleteAssessmentRound(roundId);
-        return ResponseEntity.ok(ApiResponse.success("Assessment round deleted successfully"));
+        return ResponseEntity.ok(SuccessResponse.success("Assessment round deleted successfully"));
     }
 }

@@ -10,15 +10,20 @@ import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring", uses = {UserMapper.class})
 public interface MentorMapper {
-    // Entity -> dto
+
     @Mapping(source = "user.fullName", target = "fullName")
     @Mapping(source = "user.email", target = "email")
     MentorResponse toMentorResponse(Mentor mentor);
 
-    // Dto -> Entity
-    @Mapping(target = "user", ignore = true)
     @Mapping(target = "mentorId", ignore = true)
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     Mentor toMentor(MentorCreateRequest request);
 
+    @Mapping(target = "mentorId", ignore = true)
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     void toUpdateFromMentor(MentorUpdateRequest request, @MappingTarget Mentor mentor);
 }
