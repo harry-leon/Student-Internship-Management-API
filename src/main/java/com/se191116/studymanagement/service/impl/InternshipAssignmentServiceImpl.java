@@ -1,11 +1,12 @@
 package com.se191116.studymanagement.service.impl;
 
-import com.se191116.studymanagement.exception.BusinessException;
+import com.se191116.studymanagement.exception.InvalidAssignmentStateException;
 import com.se191116.studymanagement.exception.ResourceConflictException;
 import com.se191116.studymanagement.exception.ResourceNotFoundException;
 import com.se191116.studymanagement.model.dto.request.InternshipAssignmentCreateRequest;
 import com.se191116.studymanagement.model.dto.request.InternshipAssignmentStatusUpdateRequest;
 import com.se191116.studymanagement.model.dto.response.InternshipAssignmentResponse;
+import com.se191116.studymanagement.model.entity.AssignmentStatus;
 import com.se191116.studymanagement.model.entity.InternshipAssignment;
 import com.se191116.studymanagement.model.entity.InternshipPhase;
 import com.se191116.studymanagement.model.entity.Mentor;
@@ -42,17 +43,13 @@ public class InternshipAssignmentServiceImpl implements InternshipAssignmentServ
         Page<InternshipAssignment> assignments;
 
         if (currentUser.getRole() == UserRole.ADMIN) {
-            if (userId == null) {
-                assignments = internshipAssignmentRepository.findAll(pageable);
-            } else {
-                assignments = internshipAssignmentRepository.findByStudentStudentId(userId, pageable);
-            }
+            assignments = userId == null
+                    ? internshipAssignmentRepository.findAll(pageable)
+                    : internshipAssignmentRepository.findByStudentStudentId(userId, pageable);
         } else if (currentUser.getRole() == UserRole.MENTOR) {
-            if (userId != null) {
-                assignments = internshipAssignmentRepository.findByMentorMentorIdAndStudentStudentId(currentUser.getUserId(), userId, pageable);
-            } else {
-                assignments = internshipAssignmentRepository.findByMentorMentorId(currentUser.getUserId(), pageable);
-            }
+            assignments = userId != null
+                    ? internshipAssignmentRepository.findByMentorMentorIdAndStudentStudentId(currentUser.getUserId(), userId, pageable)
+                    : internshipAssignmentRepository.findByMentorMentorId(currentUser.getUserId(), pageable);
         } else {
             assignments = internshipAssignmentRepository.findByStudentStudentId(currentUser.getUserId(), pageable);
         }
@@ -96,9 +93,33 @@ public class InternshipAssignmentServiceImpl implements InternshipAssignmentServ
         InternshipAssignment assignment = internshipAssignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Internship assignment not found with ID: " + assignmentId));
 
+        validateStatusTransition(assignment.getStatus(), request.getStatus());
+
         assignment.setStatus(request.getStatus());
         InternshipAssignment updatedAssignment = internshipAssignmentRepository.save(assignment);
         return internshipAssignmentMapper.toResponse(updatedAssignment);
+    }
+
+    private void validateStatusTransition(AssignmentStatus currentStatus, AssignmentStatus newStatus) {
+        if (currentStatus == newStatus) {
+            throw new InvalidAssignmentStateException("Assignment is already in status: " + newStatus);
+        }
+
+        if (currentStatus == AssignmentStatus.COMPLETED || currentStatus == AssignmentStatus.CANCELLED) {
+            throw new InvalidAssignmentStateException("Assignment in status " + currentStatus + " cannot be changed");
+        }
+
+        if (currentStatus == AssignmentStatus.PENDING
+                && newStatus != AssignmentStatus.IN_PROGRESS
+                && newStatus != AssignmentStatus.CANCELLED) {
+            throw new InvalidAssignmentStateException("PENDING assignment can only change to IN_PROGRESS or CANCELLED");
+        }
+
+        if (currentStatus == AssignmentStatus.IN_PROGRESS
+                && newStatus != AssignmentStatus.COMPLETED
+                && newStatus != AssignmentStatus.CANCELLED) {
+            throw new InvalidAssignmentStateException("IN_PROGRESS assignment can only change to COMPLETED or CANCELLED");
+        }
     }
 
     private void validateAssignmentAccess(InternshipAssignment assignment, User currentUser) {
@@ -112,8 +133,8 @@ public class InternshipAssignmentServiceImpl implements InternshipAssignmentServ
 
     private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof UserPrincipal) {
-            return ((UserPrincipal) authentication.getPrincipal()).getUser();
+        if (authentication != null && authentication.getPrincipal() instanceof UserPrincipal userPrincipal) {
+            return userPrincipal.getUser();
         }
         throw new AccessDeniedException("Please login!");
     }

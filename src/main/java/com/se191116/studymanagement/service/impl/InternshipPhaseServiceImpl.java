@@ -53,8 +53,7 @@ public class InternshipPhaseServiceImpl implements InternshipPhaseService {
                 });
 
         internshipPhaseMapper.updateInternshipPhaseFromRequest(request, existingPhase);
-        InternshipPhase updatedPhase = internshipPhaseRepository.save(existingPhase);
-        return internshipPhaseMapper.toInternshipPhaseResponse(updatedPhase);
+        return internshipPhaseMapper.toInternshipPhaseResponse(internshipPhaseRepository.save(existingPhase));
     }
 
     @Override

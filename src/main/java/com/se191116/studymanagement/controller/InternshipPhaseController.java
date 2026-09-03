@@ -2,7 +2,7 @@ package com.se191116.studymanagement.controller;
 
 import com.se191116.studymanagement.model.dto.request.InternshipPhaseCreateRequest;
 import com.se191116.studymanagement.model.dto.request.InternshipPhaseUpdateRequest;
-import com.se191116.studymanagement.model.dto.response.ApiResponse;
+import com.se191116.studymanagement.model.dto.response.SuccessResponse;
 import com.se191116.studymanagement.model.dto.response.InternshipPhaseResponse;
 import com.se191116.studymanagement.service.InternshipPhaseService;
 import jakarta.validation.Valid;
@@ -31,7 +31,7 @@ public class InternshipPhaseController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<InternshipPhaseResponse>>> getInternshipPhases(
+    public ResponseEntity<SuccessResponse<Page<InternshipPhaseResponse>>> getInternshipPhases(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "phaseId") String sortBy,
@@ -43,15 +43,15 @@ public class InternshipPhaseController {
 
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<InternshipPhaseResponse> phases = internshipPhaseService.getInternshipPhases(pageable);
-        return ResponseEntity.ok(ApiResponse.success(phases, "Internship phases retrieved successfully"));
+        return ResponseEntity.ok(SuccessResponse.success(phases, "Internship phases retrieved successfully"));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
     @GetMapping("/{phase_id}")
-    public ResponseEntity<ApiResponse<InternshipPhaseResponse>> getInternshipPhaseById(
+    public ResponseEntity<SuccessResponse<InternshipPhaseResponse>> getInternshipPhaseById(
             @PathVariable("phase_id") Integer phaseId
     ) {
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(SuccessResponse.success(
                 internshipPhaseService.getInternshipPhaseById(phaseId),
                 "Internship phase retrieved successfully"
         ));
@@ -59,10 +59,10 @@ public class InternshipPhaseController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<ApiResponse<InternshipPhaseResponse>> createInternshipPhase(
+    public ResponseEntity<SuccessResponse<InternshipPhaseResponse>> createInternshipPhase(
             @RequestBody @Valid InternshipPhaseCreateRequest request
     ) {
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(SuccessResponse.success(
                 internshipPhaseService.createInternshipPhase(request),
                 "Internship phase created successfully"
         ));
@@ -70,11 +70,11 @@ public class InternshipPhaseController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{phase_id}")
-    public ResponseEntity<ApiResponse<InternshipPhaseResponse>> updateInternshipPhase(
+    public ResponseEntity<SuccessResponse<InternshipPhaseResponse>> updateInternshipPhase(
             @PathVariable("phase_id") Integer phaseId,
             @RequestBody @Valid InternshipPhaseUpdateRequest request
     ) {
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(SuccessResponse.success(
                 internshipPhaseService.updateInternshipPhase(phaseId, request),
                 "Internship phase updated successfully"
         ));
@@ -82,10 +82,10 @@ public class InternshipPhaseController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{phase_id}")
-    public ResponseEntity<ApiResponse<String>> deleteInternshipPhase(
+    public ResponseEntity<SuccessResponse<String>> deleteInternshipPhase(
             @PathVariable("phase_id") Integer phaseId
     ) {
         internshipPhaseService.deleteInternshipPhase(phaseId);
-        return ResponseEntity.ok(ApiResponse.success("Internship phase deleted successfully"));
+        return ResponseEntity.ok(SuccessResponse.success("Internship phase deleted successfully"));
     }
 }

@@ -2,7 +2,7 @@ package com.se191116.studymanagement.controller;
 
 import com.se191116.studymanagement.model.dto.request.MentorCreateRequest;
 import com.se191116.studymanagement.model.dto.request.MentorUpdateRequest;
-import com.se191116.studymanagement.model.dto.response.ApiResponse;
+import com.se191116.studymanagement.model.dto.response.SuccessResponse;
 import com.se191116.studymanagement.model.dto.response.MentorResponse;
 import com.se191116.studymanagement.service.MentorService;
 import jakarta.validation.Valid;
@@ -23,24 +23,24 @@ public class MentorController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<ApiResponse<MentorResponse>> createMentor(
+    public ResponseEntity<SuccessResponse<MentorResponse>> createMentor(
             @RequestBody @Valid MentorCreateRequest request
     ) {
-        return ResponseEntity.ok(ApiResponse.success(mentorService.createMentor(request), "Create mentor successfully"));
+        return ResponseEntity.ok(SuccessResponse.success(mentorService.createMentor(request), "Create mentor successfully"));
     }
 
     @PutMapping("/{mentor_id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR')")
-    public ResponseEntity<ApiResponse<MentorResponse>> updateMentor(
+    public ResponseEntity<SuccessResponse<MentorResponse>> updateMentor(
             @PathVariable("mentor_id") Integer userId,
             @RequestBody @Valid MentorUpdateRequest request
     ) {
-        return ResponseEntity.ok(ApiResponse.success(mentorService.updateMentor(userId, request), "Update mentor successfully"));
+        return ResponseEntity.ok(SuccessResponse.success(mentorService.updateMentor(userId, request), "Update mentor successfully"));
     }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT')")
-    public ResponseEntity<ApiResponse<Page<MentorResponse>>> getMentors(
+    public ResponseEntity<SuccessResponse<Page<MentorResponse>>> getMentors(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "mentorId") String sortBy,
@@ -52,14 +52,14 @@ public class MentorController {
 
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<MentorResponse> mentors = mentorService.getMentors(pageable);
-        return ResponseEntity.ok(ApiResponse.success(mentors, "Get list mentor successfully"));
+        return ResponseEntity.ok(SuccessResponse.success(mentors, "Get list mentor successfully"));
     }
 
     @GetMapping("/{mentor_id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
-    public ResponseEntity<ApiResponse<MentorResponse>> getMentorById(
+    public ResponseEntity<SuccessResponse<MentorResponse>> getMentorById(
             @PathVariable("mentor_id") Integer userId
     ) {
-        return ResponseEntity.ok(ApiResponse.success(mentorService.getMentorById(userId), "Update mentor successfully"));
+        return ResponseEntity.ok(SuccessResponse.success(mentorService.getMentorById(userId), "Update mentor successfully"));
     }
 }

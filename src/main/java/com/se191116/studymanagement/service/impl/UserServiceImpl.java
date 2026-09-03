@@ -1,5 +1,6 @@
 package com.se191116.studymanagement.service.impl;
 
+import com.se191116.studymanagement.exception.BusinessException;
 import com.se191116.studymanagement.exception.ResourceConflictException;
 import com.se191116.studymanagement.exception.ResourceNotFoundException;
 import com.se191116.studymanagement.model.dto.request.UserCreateRequest;
@@ -45,7 +46,8 @@ public class UserServiceImpl implements UserService {
         User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+        User emailOwner = userRepository.findByEmail(request.getEmail()).orElse(null);
+        if (emailOwner != null && !emailOwner.getUserId().equals(userId)) {
             throw new ResourceConflictException("Email already exists");
         }
 
@@ -69,6 +71,10 @@ public class UserServiceImpl implements UserService {
         User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
+        if (existingUser.getRole() == UserRole.ADMIN && newRole != UserRole.ADMIN) {
+            throw new BusinessException("Admin role cannot be changed for another admin user");
+        }
+
         existingUser.setRole(newRole);
         return userMapper.toUserResponse(userRepository.save(existingUser));
     }
@@ -83,8 +89,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserResponse> getUsers(Pageable pageable) {
-        Page<User> users = userRepository.findAll(pageable);
+    public Page<UserResponse> getUsers(UserRole role, Pageable pageable) {
+        Page<User> users = role == null
+                ? userRepository.findAll(pageable)
+                : userRepository.findByRole(role, pageable);
         return users.map(userMapper::toUserResponse);
     }
 

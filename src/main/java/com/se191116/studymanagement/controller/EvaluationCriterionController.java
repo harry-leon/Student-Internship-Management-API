@@ -2,7 +2,7 @@ package com.se191116.studymanagement.controller;
 
 import com.se191116.studymanagement.model.dto.request.EvaluationCriterionCreateRequest;
 import com.se191116.studymanagement.model.dto.request.EvaluationCriterionUpdateRequest;
-import com.se191116.studymanagement.model.dto.response.ApiResponse;
+import com.se191116.studymanagement.model.dto.response.SuccessResponse;
 import com.se191116.studymanagement.model.dto.response.EvaluationCriterionResponse;
 import com.se191116.studymanagement.service.EvaluationCriterionService;
 import jakarta.validation.Valid;
@@ -23,7 +23,7 @@ public class EvaluationCriterionController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<EvaluationCriterionResponse>>> getEvaluationCriteria(
+    public ResponseEntity<SuccessResponse<Page<EvaluationCriterionResponse>>> getEvaluationCriteria(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "criterionId") String sortBy,
@@ -36,15 +36,15 @@ public class EvaluationCriterionController {
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<EvaluationCriterionResponse> criteria = evaluationCriterionService.getEvaluationCriterions(pageable);
 
-        return ResponseEntity.ok(ApiResponse.success(criteria, "Evaluation criteria retrieved successfully"));
+        return ResponseEntity.ok(SuccessResponse.success(criteria, "Evaluation criteria retrieved successfully"));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
     @GetMapping("/{criterion_id}")
-    public ResponseEntity<ApiResponse<EvaluationCriterionResponse>> getEvaluationCriterionById(
+    public ResponseEntity<SuccessResponse<EvaluationCriterionResponse>> getEvaluationCriterionById(
             @PathVariable("criterion_id") Integer criterionId
     ) {
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(SuccessResponse.success(
                 evaluationCriterionService.getEvaluationCriterionById(criterionId),
                 "Evaluation criterion retrieved successfully"
         ));
@@ -52,10 +52,10 @@ public class EvaluationCriterionController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<ApiResponse<EvaluationCriterionResponse>> createEvaluationCriterion(
+    public ResponseEntity<SuccessResponse<EvaluationCriterionResponse>> createEvaluationCriterion(
             @RequestBody @Valid EvaluationCriterionCreateRequest request
     ) {
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(SuccessResponse.success(
                 evaluationCriterionService.createEvaluationCriterion(request),
                 "Evaluation criterion created successfully"
         ));
@@ -63,11 +63,11 @@ public class EvaluationCriterionController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{criterion_id}")
-    public ResponseEntity<ApiResponse<EvaluationCriterionResponse>> updateEvaluationCriterion(
+    public ResponseEntity<SuccessResponse<EvaluationCriterionResponse>> updateEvaluationCriterion(
             @PathVariable("criterion_id") Integer criterionId,
             @RequestBody @Valid EvaluationCriterionUpdateRequest request
     ) {
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(SuccessResponse.success(
                 evaluationCriterionService.updateEvaluationCriterion(criterionId, request),
                 "Evaluation criterion updated successfully"
         ));
@@ -75,10 +75,10 @@ public class EvaluationCriterionController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{criterion_id}")
-    public ResponseEntity<ApiResponse<String>> deleteEvaluationCriterion(
+    public ResponseEntity<SuccessResponse<String>> deleteEvaluationCriterion(
             @PathVariable("criterion_id") Integer criterionId
     ) {
         evaluationCriterionService.deleteEvaluationCriterion(criterionId);
-        return ResponseEntity.ok(ApiResponse.success("Evaluation criterion deleted successfully"));
+        return ResponseEntity.ok(SuccessResponse.success("Evaluation criterion deleted successfully"));
     }
 }

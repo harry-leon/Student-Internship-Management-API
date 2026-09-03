@@ -2,7 +2,7 @@ package com.se191116.studymanagement.controller;
 
 import com.se191116.studymanagement.model.dto.request.InternshipAssignmentCreateRequest;
 import com.se191116.studymanagement.model.dto.request.InternshipAssignmentStatusUpdateRequest;
-import com.se191116.studymanagement.model.dto.response.ApiResponse;
+import com.se191116.studymanagement.model.dto.response.SuccessResponse;
 import com.se191116.studymanagement.model.dto.response.InternshipAssignmentResponse;
 import com.se191116.studymanagement.service.InternshipAssignmentService;
 import jakarta.validation.Valid;
@@ -30,7 +30,7 @@ public class InternshipAssignmentController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<InternshipAssignmentResponse>>> getInternshipAssignments(
+    public ResponseEntity<SuccessResponse<Page<InternshipAssignmentResponse>>> getInternshipAssignments(
             @RequestParam(required = false) Integer userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -41,7 +41,7 @@ public class InternshipAssignmentController {
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(SuccessResponse.success(
                 internshipAssignmentService.getInternshipAssignments(userId, pageable),
                 "Internship assignments retrieved successfully"
         ));
@@ -49,10 +49,10 @@ public class InternshipAssignmentController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
     @GetMapping("/{assignment_id}")
-    public ResponseEntity<ApiResponse<InternshipAssignmentResponse>> getInternshipAssignmentById(
+    public ResponseEntity<SuccessResponse<InternshipAssignmentResponse>> getInternshipAssignmentById(
             @PathVariable("assignment_id") Integer assignmentId
     ) {
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(SuccessResponse.success(
                 internshipAssignmentService.getInternshipAssignmentById(assignmentId),
                 "Internship assignment retrieved successfully"
         ));
@@ -60,10 +60,10 @@ public class InternshipAssignmentController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<ApiResponse<InternshipAssignmentResponse>> createInternshipAssignment(
+    public ResponseEntity<SuccessResponse<InternshipAssignmentResponse>> createInternshipAssignment(
             @RequestBody @Valid InternshipAssignmentCreateRequest request
     ) {
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(SuccessResponse.success(
                 internshipAssignmentService.createInternshipAssignment(request),
                 "Internship assignment created successfully"
         ));
@@ -71,11 +71,11 @@ public class InternshipAssignmentController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{assignment_id}/status")
-    public ResponseEntity<ApiResponse<InternshipAssignmentResponse>> updateInternshipAssignmentStatus(
+    public ResponseEntity<SuccessResponse<InternshipAssignmentResponse>> updateInternshipAssignmentStatus(
             @PathVariable("assignment_id") Integer assignmentId,
             @RequestBody @Valid InternshipAssignmentStatusUpdateRequest request
     ) {
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(SuccessResponse.success(
                 internshipAssignmentService.updateInternshipAssignmentStatus(assignmentId, request),
                 "Internship assignment status updated successfully"
         ));
