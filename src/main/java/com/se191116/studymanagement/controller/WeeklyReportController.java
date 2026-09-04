@@ -28,7 +28,7 @@ public class WeeklyReportController {
     private final WeeklyReportService reportService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'MENTOR', 'STUDENT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
     public ResponseEntity<SuccessResponse<Page<WeeklyReportResponse>>> getReports(
             @RequestParam(required = false) Integer phaseId,
             @RequestParam(required = false) Integer assignmentId,
@@ -51,7 +51,7 @@ public class WeeklyReportController {
     }
 
     @GetMapping("/{reportId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'MENTOR', 'STUDENT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
     public ResponseEntity<SuccessResponse<WeeklyReportResponse>> getReportById(
             @PathVariable Integer reportId,
             @AuthenticationPrincipal UserDetails userDetails
