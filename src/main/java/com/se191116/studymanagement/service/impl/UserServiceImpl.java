@@ -24,6 +24,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final com.se191116.studymanagement.service.FileStorageService fileStorageService;
+    private final com.se191116.studymanagement.service.AuditLogService auditLogService;
 
     @Override
     @Transactional
@@ -101,5 +103,45 @@ public class UserServiceImpl implements UserService {
         User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
         return userMapper.toUserResponse(existingUser);
+    }
+
+    @Override
+    @Transactional
+    public UserResponse uploadAvatar(Integer userId, org.springframework.web.multipart.MultipartFile file) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
+
+        if (user.getAvatarUrl() != null) {
+            fileStorageService.deleteAvatar(user.getAvatarUrl());
+        }
+
+        String avatarUrl = fileStorageService.storeAvatar(file);
+        user.setAvatarUrl(avatarUrl);
+        User updated = userRepository.save(user);
+        auditLogService.log(userId, "UPLOAD_AVATAR", "USER", userId, "Avatar updated: " + avatarUrl);
+        return userMapper.toUserResponse(updated);
+    }
+
+    @Override
+    @Transactional
+    public UserResponse uploadMyAvatar(String username, org.springframework.web.multipart.MultipartFile file) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+        return uploadAvatar(user.getUserId(), file);
+    }
+
+    @Override
+    @Transactional
+    public UserResponse deleteMyAvatar(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+
+        if (user.getAvatarUrl() != null) {
+            fileStorageService.deleteAvatar(user.getAvatarUrl());
+            user.setAvatarUrl(null);
+            user = userRepository.save(user);
+            auditLogService.log(user.getUserId(), "DELETE_AVATAR", "USER", user.getUserId(), "Avatar deleted");
+        }
+        return userMapper.toUserResponse(user);
     }
 }

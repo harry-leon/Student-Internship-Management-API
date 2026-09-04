@@ -5,6 +5,7 @@ import com.se191116.studymanagement.model.dto.request.AssessmentResultUpdateRequ
 import com.se191116.studymanagement.model.dto.response.SuccessResponse;
 import com.se191116.studymanagement.model.dto.response.AssessmentResultResponse;
 import com.se191116.studymanagement.service.AssessmentResultService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/assessment_results")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class AssessmentResultController {
     private final AssessmentResultService assessmentResultService;
 

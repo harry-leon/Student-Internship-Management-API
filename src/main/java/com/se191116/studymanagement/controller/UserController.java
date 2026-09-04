@@ -1,11 +1,13 @@
 package com.se191116.studymanagement.controller;
 
 import com.se191116.studymanagement.model.dto.request.UserCreateRequest;
+import com.se191116.studymanagement.model.dto.request.UserStatusUpdateRequest;
 import com.se191116.studymanagement.model.dto.request.UserUpdateRequest;
 import com.se191116.studymanagement.model.dto.response.SuccessResponse;
 import com.se191116.studymanagement.model.dto.response.UserResponse;
 import com.se191116.studymanagement.model.entity.UserRole;
 import com.se191116.studymanagement.service.UserService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/users")
+@SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
@@ -75,9 +78,12 @@ public class UserController {
     @PutMapping("/{user_id}/status")
     public ResponseEntity<SuccessResponse<UserResponse>> updateUserStatus(
             @PathVariable("user_id") Integer userId,
-            @RequestParam("status") Boolean isActive
+            @RequestBody @Valid UserStatusUpdateRequest request
     ) {
-        return ResponseEntity.ok(SuccessResponse.success(userService.updateUserStatus(userId, isActive), "User status updated successfully"));
+        return ResponseEntity.ok(SuccessResponse.success(
+                userService.updateUserStatus(userId, request.getIsActive()),
+                "User status updated successfully"
+        ));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -95,4 +101,49 @@ public class UserController {
         userService.deleteUser(userId);
         return ResponseEntity.ok(SuccessResponse.success("User deleted successfully"));
     }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
+    @PostMapping(value = "/me/avatar", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<SuccessResponse<UserResponse>> uploadMyAvatar(
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file,
+            org.springframework.security.core.Authentication authentication
+    ) {
+        UserResponse response = userService.uploadMyAvatar(authentication.getName(), file);
+        return ResponseEntity.ok(SuccessResponse.success(response, "Avatar uploaded successfully"));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping(value = "/{user_id}/avatar", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<SuccessResponse<UserResponse>> uploadUserAvatar(
+            @PathVariable("user_id") Integer userId,
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file
+    ) {
+        UserResponse response = userService.uploadAvatar(userId, file);
+        return ResponseEntity.ok(SuccessResponse.success(response, "User avatar uploaded successfully"));
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
+    @DeleteMapping("/me/avatar")
+    public ResponseEntity<SuccessResponse<UserResponse>> deleteMyAvatar(
+            org.springframework.security.core.Authentication authentication
+    ) {
+        UserResponse response = userService.deleteMyAvatar(authentication.getName());
+        return ResponseEntity.ok(SuccessResponse.success(response, "Avatar deleted successfully"));
+    }
+
+    @GetMapping("/avatar/{filename:.+}")
+    public ResponseEntity<org.springframework.core.io.Resource> getAvatar(
+            @PathVariable String filename,
+            com.se191116.studymanagement.service.FileStorageService fileStorageService
+    ) {
+        org.springframework.core.io.Resource resource = fileStorageService.loadAvatar(filename);
+        String contentType = "image/jpeg";
+        if (filename.endsWith(".png")) contentType = "image/png";
+        else if (filename.endsWith(".webp")) contentType = "image/webp";
+
+        return ResponseEntity.ok()
+                .contentType(org.springframework.http.MediaType.parseMediaType(contentType))
+                .body(resource);
+    }
 }
+

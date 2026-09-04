@@ -4,11 +4,14 @@ import com.se191116.studymanagement.model.dto.response.ErrorResponse;
 import com.se191116.studymanagement.model.dto.response.FieldErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,6 +35,20 @@ public class GlobalExceptionHandler {
                 ErrorCode.INVALID_INPUT_DATA,
                 "Invalid input data",
                 errors
+        );
+    }
+
+    @ExceptionHandler({
+            MissingServletRequestParameterException.class,
+            MethodArgumentTypeMismatchException.class,
+            HttpMessageNotReadableException.class
+    })
+    public ResponseEntity<ErrorResponse> handleBadRequestException(Exception e) {
+        return buildResponse(
+                HttpStatus.BAD_REQUEST,
+                ErrorCode.INVALID_INPUT_DATA,
+                "Invalid input data",
+                null
         );
     }
 
@@ -87,3 +104,4 @@ public class GlobalExceptionHandler {
                         .build());
     }
 }
+

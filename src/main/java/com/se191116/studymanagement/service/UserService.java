@@ -15,4 +15,7 @@ public interface UserService {
     UserResponse updateUserStatus(Integer userId, Boolean isActive);
     UserResponse updateUserRole(Integer userId, UserRole newRole);
     void deleteUser(Integer userId);
+    UserResponse uploadAvatar(Integer userId, org.springframework.web.multipart.MultipartFile file);
+    UserResponse uploadMyAvatar(String username, org.springframework.web.multipart.MultipartFile file);
+    UserResponse deleteMyAvatar(String username);
 }

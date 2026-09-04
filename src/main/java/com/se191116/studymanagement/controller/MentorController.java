@@ -5,6 +5,7 @@ import com.se191116.studymanagement.model.dto.request.MentorUpdateRequest;
 import com.se191116.studymanagement.model.dto.response.SuccessResponse;
 import com.se191116.studymanagement.model.dto.response.MentorResponse;
 import com.se191116.studymanagement.service.MentorService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/mentors")
+@SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 public class MentorController {
     private final MentorService mentorService;

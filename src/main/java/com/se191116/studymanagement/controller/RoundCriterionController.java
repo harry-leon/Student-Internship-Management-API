@@ -5,6 +5,7 @@ import com.se191116.studymanagement.model.dto.request.RoundCriterionUpdateReques
 import com.se191116.studymanagement.model.dto.response.SuccessResponse;
 import com.se191116.studymanagement.model.dto.response.RoundCriterionResponse;
 import com.se191116.studymanagement.service.RoundCriterionService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/round_criteria")
+@SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 public class RoundCriterionController {
     private final RoundCriterionService roundCriterionService;

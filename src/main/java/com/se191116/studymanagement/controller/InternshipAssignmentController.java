@@ -5,6 +5,7 @@ import com.se191116.studymanagement.model.dto.request.InternshipAssignmentStatus
 import com.se191116.studymanagement.model.dto.response.SuccessResponse;
 import com.se191116.studymanagement.model.dto.response.InternshipAssignmentResponse;
 import com.se191116.studymanagement.service.InternshipAssignmentService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/internship_assignments")
+@SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 public class InternshipAssignmentController {
     private final InternshipAssignmentService internshipAssignmentService;

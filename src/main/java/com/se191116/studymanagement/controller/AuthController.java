@@ -28,10 +28,32 @@ public class AuthController {
         return ResponseEntity.ok(SuccessResponse.success(loginResponse, "Login successful"));
     }
 
+    @PostMapping("/oauth2/exchange")
+    public ResponseEntity<SuccessResponse<LoginResponse>> exchangeOAuth2Code(
+            @RequestBody @Valid com.se191116.studymanagement.model.dto.request.OAuth2ExchangeRequest request
+    ) {
+        LoginResponse response = authService.loginWithOAuth2(request);
+        return ResponseEntity.ok(SuccessResponse.success(response, "OAuth2 login successful"));
+    }
+
+    @GetMapping("/oauth2/status")
+    public ResponseEntity<SuccessResponse<java.util.Map<String, Object>>> getOAuth2Status() {
+        java.util.Map<String, Object> status = new java.util.HashMap<>();
+        status.put("googleLoginEnabled", true);
+        status.put("provider", "GOOGLE");
+        return ResponseEntity.ok(SuccessResponse.success(status, "OAuth2 status retrieved"));
+    }
+
     @PreAuthorize("hasAnyRole('ADMIN','MENTOR','STUDENT')")
     @GetMapping("/me")
     public ResponseEntity<SuccessResponse<UserResponse>> getCurrentUser(Authentication authentication) {
         UserResponse currentUser = authService.getCurrentUser(authentication.getName());
         return ResponseEntity.ok(SuccessResponse.success(currentUser, "Current user retrieved successfully"));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<SuccessResponse<Void>> logout() {
+        authService.logout();
+        return ResponseEntity.ok(SuccessResponse.success("Logout successful"));
     }
 }

@@ -49,6 +49,19 @@ public class User {
     @Column(name = "PhoneNumber", length = 20)
     private String phoneNumber;
 
+    @Size(max = 500, message = "Avatar URL must be at most 500 characters")
+    @Column(name = "AvatarUrl", length = 500)
+    private String avatarUrl;
+
+    @Size(max = 30)
+    @Column(name = "AuthProvider", length = 30, nullable = false)
+    @Builder.Default
+    private String authProvider = "LOCAL";
+
+    @Size(max = 150)
+    @Column(name = "ProviderId", length = 150)
+    private String providerId;
+
     @NotNull(message = "Role must not be null")
     @Enumerated(EnumType.STRING)
     @Column(name = "Role", nullable = false, length = 20)

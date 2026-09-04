@@ -17,6 +17,9 @@ public interface UserMapper {
     @Mapping(target = "isActive", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "avatarUrl", ignore = true)
+    @Mapping(target = "authProvider", ignore = true)
+    @Mapping(target = "providerId", ignore = true)
     @Mapping(target = "passwordHash", source = "password")
     User toUser(UserCreateRequest request);
 
@@ -27,5 +30,8 @@ public interface UserMapper {
     @Mapping(target = "isActive", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "avatarUrl", ignore = true)
+    @Mapping(target = "authProvider", ignore = true)
+    @Mapping(target = "providerId", ignore = true)
     void updateUserFromRequest(UserUpdateRequest request, @MappingTarget User user);
 }
