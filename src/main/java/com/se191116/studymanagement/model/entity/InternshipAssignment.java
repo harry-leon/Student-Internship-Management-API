@@ -37,6 +37,10 @@ public class InternshipAssignment {
     @JoinColumn(name = "PhaseID", nullable = false)
     private InternshipPhase phase;
 
+    @ManyToOne
+    @JoinColumn(name = "CompanyID", nullable = true)
+    private Company company;
+
     @CreationTimestamp
     @Column(name = "AssignedDate", nullable = false, updatable = false)
     private LocalDateTime assignedDate;
