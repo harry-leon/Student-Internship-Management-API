@@ -7,7 +7,9 @@ import com.se191116.studymanagement.model.dto.request.AssessmentGradingRequest;
 import com.se191116.studymanagement.model.dto.request.GradingItemRequest;
 import com.se191116.studymanagement.model.dto.response.AssessmentGradingFormResponse;
 import com.se191116.studymanagement.model.dto.response.GradingCriterionResponse;
+import com.se191116.studymanagement.model.dto.response.StudentSubmissionResponse;
 import com.se191116.studymanagement.model.entity.*;
+import com.se191116.studymanagement.model.mapper.StudentSubmissionMapper;
 import com.se191116.studymanagement.repository.*;
 import com.se191116.studymanagement.service.AssessmentGradingService;
 import com.se191116.studymanagement.service.AuditLogService;
@@ -37,6 +39,8 @@ public class AssessmentGradingServiceImpl implements AssessmentGradingService {
     private final MentorRepository mentorRepository;
     private final AuditLogService auditLogService;
     private final com.se191116.studymanagement.service.NotificationService notificationService;
+    private final StudentSubmissionRepository studentSubmissionRepository;
+    private final StudentSubmissionMapper studentSubmissionMapper;
 
     @Override
     public AssessmentGradingFormResponse getGradingForm(Integer assignmentId, Integer roundId, String currentUsername) {
@@ -97,6 +101,11 @@ public class AssessmentGradingServiceImpl implements AssessmentGradingService {
             throw new AccessDeniedException("Grading results for this round have not been published yet");
         }
 
+        StudentSubmissionResponse latestStudentSubmission = studentSubmissionRepository
+                .findFirstByAssignmentAssignmentIdAndRoundRoundIdAndIsLatestTrue(assignmentId, roundId)
+                .map(studentSubmissionMapper::toResponse)
+                .orElse(null);
+
         return AssessmentGradingFormResponse.builder()
                 .submissionId(submission != null ? submission.getSubmissionId() : null)
                 .assignmentId(assignment.getAssignmentId())
@@ -115,6 +124,7 @@ public class AssessmentGradingServiceImpl implements AssessmentGradingService {
                 .evaluatedByName(submission != null && submission.getEvaluatedBy() != null ? submission.getEvaluatedBy().getFullName() : null)
                 .submittedAt(submission != null ? submission.getSubmittedAt() : null)
                 .publishedAt(submission != null ? submission.getPublishedAt() : null)
+                .latestSubmission(latestStudentSubmission)
                 .build();
     }
 

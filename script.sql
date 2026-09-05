@@ -246,6 +246,35 @@ FROM (
          JOIN evaluation_criteria ec ON ec.criterion_name = v.criterion_name
          JOIN users evaluator ON evaluator.username = v.evaluator_username;
 
+-- =========================================================
+-- 10. student_submissions (Task 07)
+-- =========================================================
+CREATE TABLE IF NOT EXISTS student_submissions (
+    submission_id SERIAL PRIMARY KEY,
+    assignment_id INTEGER NOT NULL,
+    round_id INTEGER NULL,
+    submitted_by INTEGER NOT NULL,
+    submission_type VARCHAR(20) NOT NULL,
+    github_url VARCHAR(500) NULL,
+    original_file_name VARCHAR(255) NULL,
+    stored_file_name VARCHAR(255) NULL,
+    file_size_bytes BIGINT NULL,
+    content_type VARCHAR(100) NULL,
+    note TEXT NULL,
+    version_no INTEGER NOT NULL DEFAULT 1,
+    is_latest BOOLEAN NOT NULL DEFAULT TRUE,
+    submitted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_submission_assignment FOREIGN KEY (assignment_id) REFERENCES internship_assignments(assignment_id),
+    CONSTRAINT fk_submission_round FOREIGN KEY (round_id) REFERENCES assessment_rounds(round_id),
+    CONSTRAINT fk_submission_user FOREIGN KEY (submitted_by) REFERENCES users(userid),
+    CONSTRAINT ck_submission_type CHECK (submission_type IN ('GITHUB', 'ZIP'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_submission_assignment_round ON student_submissions(assignment_id, round_id);
+CREATE INDEX IF NOT EXISTS idx_submission_latest ON student_submissions(assignment_id, round_id, is_latest);
+CREATE INDEX IF NOT EXISTS idx_submission_submitted_by ON student_submissions(submitted_by);
+
 COMMIT;
 
 SELECT * FROM users;
@@ -257,3 +286,4 @@ SELECT * FROM assessment_rounds;
 SELECT * FROM round_criteria;
 SELECT * FROM internship_assignments;
 SELECT * FROM assessment_results;
+SELECT * FROM student_submissions;

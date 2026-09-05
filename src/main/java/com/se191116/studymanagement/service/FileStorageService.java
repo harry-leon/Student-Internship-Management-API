@@ -7,4 +7,8 @@ public interface FileStorageService {
     String storeAvatar(MultipartFile file);
     Resource loadAvatar(String filename);
     void deleteAvatar(String avatarUrl);
+
+    String storeSubmissionZip(MultipartFile file);
+    Resource loadSubmissionZip(String filename);
+    void deleteSubmissionZip(String filename);
 }

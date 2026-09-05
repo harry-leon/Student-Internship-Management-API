@@ -32,4 +32,5 @@ public class AssessmentGradingFormResponse {
     private String evaluatedByName;
     private LocalDateTime submittedAt;
     private LocalDateTime publishedAt;
+    private StudentSubmissionResponse latestSubmission;
 }
