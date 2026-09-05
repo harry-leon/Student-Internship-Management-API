@@ -4,6 +4,7 @@ import com.se191116.studymanagement.model.entity.StudentSubmission;
 import com.se191116.studymanagement.model.entity.StudentSubmissionType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -16,6 +17,7 @@ import java.util.Optional;
 @Repository
 public interface StudentSubmissionRepository extends JpaRepository<StudentSubmission, Integer> {
 
+    @EntityGraph(attributePaths = {"assignment.student.user", "assignment.mentor.user", "assignment.phase", "round"})
     @Query("SELECT s FROM StudentSubmission s " +
             "WHERE (:phaseId IS NULL OR s.assignment.phase.phaseId = :phaseId) " +
             "AND (:roundId IS NULL OR (s.round IS NOT NULL AND s.round.roundId = :roundId)) " +
@@ -35,6 +37,7 @@ public interface StudentSubmissionRepository extends JpaRepository<StudentSubmis
             Pageable pageable
     );
 
+    @EntityGraph(attributePaths = {"assignment.student.user", "assignment.mentor.user", "assignment.phase", "round"})
     @Query("SELECT s FROM StudentSubmission s " +
             "WHERE s.assignment.student.studentId = :studentId " +
             "AND (:roundId IS NULL OR (s.round IS NOT NULL AND s.round.roundId = :roundId)) " +
@@ -45,6 +48,8 @@ public interface StudentSubmissionRepository extends JpaRepository<StudentSubmis
             @Param("type") StudentSubmissionType type,
             Pageable pageable
     );
+
+    List<StudentSubmission> findByAssignmentAssignmentIdInAndIsLatestTrue(List<Integer> assignmentIds);
 
     List<StudentSubmission> findByAssignmentAssignmentIdAndRoundRoundId(Integer assignmentId, Integer roundId);
 

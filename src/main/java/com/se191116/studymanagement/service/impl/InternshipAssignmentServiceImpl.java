@@ -13,11 +13,13 @@ import com.se191116.studymanagement.model.entity.Mentor;
 import com.se191116.studymanagement.model.entity.Student;
 import com.se191116.studymanagement.model.entity.User;
 import com.se191116.studymanagement.model.entity.UserRole;
+import com.se191116.studymanagement.model.entity.StudentSubmission;
 import com.se191116.studymanagement.model.mapper.InternshipAssignmentMapper;
 import com.se191116.studymanagement.repository.InternshipAssignmentRepository;
 import com.se191116.studymanagement.repository.InternshipPhaseRepository;
 import com.se191116.studymanagement.repository.MentorRepository;
 import com.se191116.studymanagement.repository.StudentRepository;
+import com.se191116.studymanagement.repository.StudentSubmissionRepository;
 import com.se191116.studymanagement.security.UserPrincipal;
 import com.se191116.studymanagement.service.InternshipAssignmentService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class InternshipAssignmentServiceImpl implements InternshipAssignmentService {
@@ -36,6 +43,7 @@ public class InternshipAssignmentServiceImpl implements InternshipAssignmentServ
     private final MentorRepository mentorRepository;
     private final InternshipPhaseRepository internshipPhaseRepository;
     private final InternshipAssignmentMapper internshipAssignmentMapper;
+    private final StudentSubmissionRepository studentSubmissionRepository;
 
     @Override
     public Page<InternshipAssignmentResponse> getInternshipAssignments(Integer userId, Pageable pageable) {
@@ -54,7 +62,30 @@ public class InternshipAssignmentServiceImpl implements InternshipAssignmentServ
             assignments = internshipAssignmentRepository.findByStudentStudentId(currentUser.getUserId(), pageable);
         }
 
-        return assignments.map(internshipAssignmentMapper::toResponse);
+        List<Integer> assignmentIds = assignments.getContent().stream()
+                .map(InternshipAssignment::getAssignmentId)
+                .toList();
+
+        Map<Integer, StudentSubmission> latestSubmissions = assignmentIds.isEmpty()
+                ? Collections.emptyMap()
+                : studentSubmissionRepository.findByAssignmentAssignmentIdInAndIsLatestTrue(assignmentIds)
+                        .stream()
+                        .collect(Collectors.toMap(
+                                s -> s.getAssignment().getAssignmentId(),
+                                s -> s,
+                                (s1, s2) -> s1.getVersionNo() >= s2.getVersionNo() ? s1 : s2
+                        ));
+
+        return assignments.map(assignment -> {
+            InternshipAssignmentResponse response = internshipAssignmentMapper.toResponse(assignment);
+            StudentSubmission latestSub = latestSubmissions.get(assignment.getAssignmentId());
+            if (latestSub != null) {
+                response.setLatestSubmissionId(latestSub.getSubmissionId());
+                response.setLatestSubmissionType(latestSub.getSubmissionType());
+                response.setLatestSubmittedAt(latestSub.getSubmittedAt());
+            }
+            return response;
+        });
     }
 
     @Override
@@ -63,7 +94,18 @@ public class InternshipAssignmentServiceImpl implements InternshipAssignmentServ
                 .orElseThrow(() -> new ResourceNotFoundException("Internship assignment not found with ID: " + assignmentId));
 
         validateAssignmentAccess(assignment, getCurrentUser());
-        return internshipAssignmentMapper.toResponse(assignment);
+        InternshipAssignmentResponse response = internshipAssignmentMapper.toResponse(assignment);
+
+        studentSubmissionRepository.findByAssignmentAssignmentIdInAndIsLatestTrue(List.of(assignmentId))
+                .stream()
+                .max((s1, s2) -> Integer.compare(s1.getVersionNo(), s2.getVersionNo()))
+                .ifPresent(latestSub -> {
+                    response.setLatestSubmissionId(latestSub.getSubmissionId());
+                    response.setLatestSubmissionType(latestSub.getSubmissionType());
+                    response.setLatestSubmittedAt(latestSub.getSubmittedAt());
+                });
+
+        return response;
     }
 
     @Override

@@ -24,4 +24,8 @@ public class InternshipAssignmentResponse {
     private LocalDateTime assignedDate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private Integer latestSubmissionId;
+    private com.se191116.studymanagement.model.entity.StudentSubmissionType latestSubmissionType;
+    private LocalDateTime latestSubmittedAt;
 }

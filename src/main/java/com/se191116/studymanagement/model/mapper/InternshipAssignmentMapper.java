@@ -18,5 +18,8 @@ public interface InternshipAssignmentMapper {
 
     @Mapping(source = "phase.phaseId", target = "phaseId")
     @Mapping(source = "phase.phaseName", target = "phaseName")
+    @Mapping(target = "latestSubmissionId", ignore = true)
+    @Mapping(target = "latestSubmissionType", ignore = true)
+    @Mapping(target = "latestSubmittedAt", ignore = true)
     InternshipAssignmentResponse toResponse(InternshipAssignment assignment);
 }
