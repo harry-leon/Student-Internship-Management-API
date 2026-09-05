@@ -37,6 +37,7 @@ public class AssessmentResultServiceImpl implements AssessmentResultService {
     private final EvaluationCriterionRepository evaluationCriterionRepository;
     private final RoundCriterionRepository roundCriterionRepository;
     private final AssessmentResultMapper assessmentResultMapper;
+    private final com.se191116.studymanagement.service.FeatureFlagService featureFlagService;
 
     @Override
     public Page<AssessmentResultResponse> getAssessmentResults(Pageable pageable) {
@@ -48,6 +49,7 @@ public class AssessmentResultServiceImpl implements AssessmentResultService {
         } else if (currentUser.getRole() == UserRole.MENTOR) {
             results = assessmentResultRepository.findByAssignmentMentorMentorId(currentUser.getUserId(), pageable);
         } else {
+            featureFlagService.requireFeatureEnabledForRole("STUDENT_VIEW_SCORE_ENABLED", currentUser.getRole());
             results = assessmentResultRepository.findByAssignmentStudentStudentId(currentUser.getUserId(), pageable);
         }
 
@@ -60,6 +62,7 @@ public class AssessmentResultServiceImpl implements AssessmentResultService {
         if (currentUser.getRole() != UserRole.MENTOR) {
             throw new AccessDeniedException("Only mentors can create assessment results");
         }
+        featureFlagService.requireFeatureEnabledForRole("MENTOR_SCORING_ENABLED", currentUser.getRole());
 
         InternshipAssignment assignment = internshipAssignmentRepository.findById(request.getAssignmentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Internship assignment not found with ID: " + request.getAssignmentId()));
@@ -94,6 +97,7 @@ public class AssessmentResultServiceImpl implements AssessmentResultService {
         if (currentUser.getRole() != UserRole.MENTOR) {
             throw new AccessDeniedException("Only mentors can update assessment results");
         }
+        featureFlagService.requireFeatureEnabledForRole("MENTOR_SCORING_ENABLED", currentUser.getRole());
 
         AssessmentResult existingResult = assessmentResultRepository.findById(resultId)
                 .orElseThrow(() -> new ResourceNotFoundException("Assessment result not found with ID: " + resultId));

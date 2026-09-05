@@ -22,7 +22,7 @@ public class AssessmentGradingController {
     private final AssessmentGradingService gradingService;
 
     @GetMapping("/forms")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR')")
     public ResponseEntity<SuccessResponse<AssessmentGradingFormResponse>> getGradingForm(
             @RequestParam Integer assignmentId,
             @RequestParam Integer roundId,

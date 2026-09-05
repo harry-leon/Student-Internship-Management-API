@@ -191,7 +191,16 @@ public class AssessmentGradingServiceImpl implements AssessmentGradingService {
 
         List<AssessmentSubmission> submissions;
         if (user.getRole() == UserRole.STUDENT) {
+            featureFlagService.requireFeatureEnabledForRole("STUDENT_VIEW_SCORE_ENABLED", user.getRole());
             submissions = submissionRepository.findByAssignmentStudentStudentId(user.getUserId(), null).getContent();
+        } else if (user.getRole() == UserRole.MENTOR) {
+            Mentor mentor = mentorRepository.findById(user.getUserId()).orElse(null);
+            Integer mentorId = mentor != null ? mentor.getMentorId() : user.getUserId();
+            if (roundId != null) {
+                submissions = submissionRepository.findByAssignmentMentorMentorIdAndRoundRoundId(mentorId, roundId);
+            } else {
+                submissions = submissionRepository.findByAssignmentMentorMentorId(mentorId);
+            }
         } else if (roundId != null) {
             submissions = submissionRepository.findByRoundRoundId(roundId, null).getContent();
         } else {

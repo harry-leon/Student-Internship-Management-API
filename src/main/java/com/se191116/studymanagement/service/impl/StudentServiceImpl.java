@@ -89,6 +89,12 @@ public class StudentServiceImpl implements StudentService {
         User currentUser = getCurrentUser();
         if (currentUser.getRole() == UserRole.STUDENT && !currentUser.getUserId().equals(studentId)) {
             throw new AccessDeniedException("Don't access in info other students!");
+        } else if (currentUser.getRole() == UserRole.MENTOR) {
+            boolean isAssigned = internshipAssignmentRepository.existsByMentorMentorIdAndStudentStudentId(
+                    currentUser.getUserId(), studentId);
+            if (!isAssigned) {
+                throw new AccessDeniedException("You are not authorized to view students not assigned to you");
+            }
         }
 
         Student existingStudent = studentRepository.findById(studentId)
