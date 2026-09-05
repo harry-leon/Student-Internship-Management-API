@@ -24,7 +24,7 @@ public interface StudentSubmissionRepository extends JpaRepository<StudentSubmis
             "AND (:assignmentId IS NULL OR s.assignment.assignmentId = :assignmentId) " +
             "AND (:studentId IS NULL OR s.assignment.student.studentId = :studentId) " +
             "AND (:mentorId IS NULL OR s.assignment.mentor.mentorId = :mentorId) " +
-            "AND (:studentCode IS NULL OR LOWER(s.assignment.student.studentCode) LIKE LOWER(CONCAT('%', :studentCode, '%'))) " +
+            "AND (cast(:studentCode as string) IS NULL OR LOWER(s.assignment.student.studentCode) LIKE LOWER(CONCAT('%', cast(:studentCode as string), '%'))) " +
             "AND (:type IS NULL OR s.submissionType = :type)")
     Page<StudentSubmission> searchSubmissions(
             @Param("phaseId") Integer phaseId,

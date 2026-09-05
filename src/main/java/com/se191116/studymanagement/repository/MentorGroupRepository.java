@@ -28,14 +28,14 @@ public interface MentorGroupRepository extends JpaRepository<MentorGroup, Intege
             "JOIN FETCH g.mentor m " +
             "JOIN FETCH m.user u " +
             "JOIN FETCH g.phase p " +
-            "WHERE (:mentorName IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :mentorName, '%'))) " +
+            "WHERE (cast(:mentorName as string) IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', cast(:mentorName as string), '%'))) " +
             "AND (:phaseId IS NULL OR p.phaseId = :phaseId) " +
             "AND (:isActive IS NULL OR g.isActive = :isActive)",
             countQuery = "SELECT COUNT(g) FROM MentorGroup g " +
             "JOIN g.mentor m " +
             "JOIN m.user u " +
             "JOIN g.phase p " +
-            "WHERE (:mentorName IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :mentorName, '%'))) " +
+            "WHERE (cast(:mentorName as string) IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', cast(:mentorName as string), '%'))) " +
             "AND (:phaseId IS NULL OR p.phaseId = :phaseId) " +
             "AND (:isActive IS NULL OR g.isActive = :isActive)")
     Page<MentorGroup> findAllWithFilters(@Param("mentorName") String mentorName,
@@ -48,8 +48,8 @@ public interface MentorGroupRepository extends JpaRepository<MentorGroup, Intege
             "JOIN FETCH m.user u " +
             "JOIN FETCH g.phase p " +
             "WHERE g.isActive = true " +
-            "AND (:mentorName IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :mentorName, '%'))) " +
-            "AND (:groupCode IS NULL OR LOWER(g.groupCode) LIKE LOWER(CONCAT('%', :groupCode, '%')) OR LOWER(g.groupName) LIKE LOWER(CONCAT('%', :groupCode, '%'))) " +
+            "AND (cast(:mentorName as string) IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', cast(:mentorName as string), '%'))) " +
+            "AND (cast(:groupCode as string) IS NULL OR LOWER(g.groupCode) LIKE LOWER(CONCAT('%', cast(:groupCode as string), '%')) OR LOWER(g.groupName) LIKE LOWER(CONCAT('%', cast(:groupCode as string), '%'))) " +
             "ORDER BY g.createdAt DESC")
     List<MentorGroup> searchActiveGroups(@Param("mentorName") String mentorName,
                                          @Param("groupCode") String groupCode);
