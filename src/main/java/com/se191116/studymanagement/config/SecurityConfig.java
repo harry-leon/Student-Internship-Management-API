@@ -1,6 +1,7 @@
 package com.se191116.studymanagement.config;
 
 import com.se191116.studymanagement.security.CustomUserDetailsService;
+import com.se191116.studymanagement.security.jwt.JwtAccessDeniedHandler;
 import com.se191116.studymanagement.security.jwt.JwtAuthFilter;
 import com.se191116.studymanagement.security.jwt.JwtEntryPoint;
 import org.springframework.context.annotation.Bean;
@@ -23,13 +24,16 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtEntryPoint jwtEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter,
                           CustomUserDetailsService customUserDetailsService,
-                          JwtEntryPoint jwtEntryPoint) {
+                          JwtEntryPoint jwtEntryPoint,
+                          JwtAccessDeniedHandler jwtAccessDeniedHandler) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.customUserDetailsService = customUserDetailsService;
         this.jwtEntryPoint = jwtEntryPoint;
+        this.jwtAccessDeniedHandler = jwtAccessDeniedHandler;
     }
 
     @org.springframework.beans.factory.annotation.Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
@@ -55,7 +59,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
-                .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtEntryPoint))
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(jwtEntryPoint)
+                        .accessDeniedHandler(jwtAccessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/login",
@@ -90,3 +96,5 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 }
+
+

@@ -11,6 +11,7 @@ import java.util.Optional;
 
 @Repository
 public interface InternshipApplicationRepository extends JpaRepository<InternshipApplication, Integer> {
+    long countByStatus(InternshipApplicationStatus status);
     Page<InternshipApplication> findByStudentStudentId(Integer studentId, Pageable pageable);
     Page<InternshipApplication> findByStatus(InternshipApplicationStatus status, Pageable pageable);
     Optional<InternshipApplication> findByStudentStudentIdAndPhasePhaseId(Integer studentId, Integer phaseId);

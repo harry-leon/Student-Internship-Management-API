@@ -18,6 +18,8 @@ public interface AssessmentSubmissionRepository extends JpaRepository<Assessment
 
     Page<AssessmentSubmission> findByAssignmentStudentStudentId(Integer studentId, Pageable pageable);
 
+    long countByAssignmentStudentStudentId(Integer studentId);
+
     Page<AssessmentSubmission> findByStatus(AssessmentSubmissionStatus status, Pageable pageable);
 
     boolean existsByAssignmentAssignmentIdAndRoundRoundId(Integer assignmentId, Integer roundId);

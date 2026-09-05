@@ -12,5 +12,11 @@ public interface InternshipAssignmentRepository extends JpaRepository<Internship
 
     Page<InternshipAssignment> findByMentorMentorIdAndStudentStudentId(Integer mentorId, Integer studentId, Pageable pageable);
 
+    long countByMentorMentorId(Integer mentorId);
+
+    java.util.Optional<InternshipAssignment> findByStudentStudentIdAndPhasePhaseId(Integer studentId, Integer phaseId);
+
+    java.util.Optional<InternshipAssignment> findFirstByStudentStudentId(Integer studentId);
+
     boolean existsByStudentStudentIdAndPhasePhaseId(Integer studentId, Integer phaseId);
 }

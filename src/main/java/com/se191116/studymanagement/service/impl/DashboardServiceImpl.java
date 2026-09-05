@@ -36,7 +36,7 @@ public class DashboardServiceImpl implements DashboardService {
             long totalStudents = studentRepository.count();
             long totalMentors = mentorRepository.count();
             long totalAssignments = assignmentRepository.count();
-            long pendingApplications = applicationRepository.count();
+            long pendingApplications = applicationRepository.countByStatus(InternshipApplicationStatus.SUBMITTED);
             long activePhases = phaseRepository.count();
 
             kpis.put("totalStudents", totalStudents);
@@ -50,8 +50,8 @@ public class DashboardServiceImpl implements DashboardService {
             Mentor mentor = mentorRepository.findById(user.getUserId()).orElse(null);
             Integer mentorId = mentor != null ? mentor.getMentorId() : user.getUserId();
 
-            long activeStudents = assignmentRepository.count();
-            long reportsToReview = weeklyReportRepository.count();
+            long activeStudents = assignmentRepository.countByMentorMentorId(mentorId);
+            long reportsToReview = weeklyReportRepository.countByAssignmentMentorMentorIdAndStatus(mentorId, WeeklyReportStatus.SUBMITTED);
 
             kpis.put("activeStudents", activeStudents);
             kpis.put("reportsToReview", reportsToReview);
@@ -63,8 +63,11 @@ public class DashboardServiceImpl implements DashboardService {
             Student student = studentRepository.findById(user.getUserId()).orElse(null);
             Integer studentId = student != null ? student.getStudentId() : user.getUserId();
 
-            kpis.put("myReportsCount", 0);
-            kpis.put("mySubmissionsCount", 0);
+            long myReportsCount = weeklyReportRepository.countByAssignmentStudentStudentId(studentId);
+            long mySubmissionsCount = submissionRepository.countByAssignmentStudentStudentId(studentId);
+
+            kpis.put("myReportsCount", myReportsCount);
+            kpis.put("mySubmissionsCount", mySubmissionsCount);
 
             details.put("studentId", studentId);
             details.put("message", "Student Internship Portal");

@@ -34,6 +34,7 @@ public class WeeklyReportServiceImpl implements WeeklyReportService {
     private final UserRepository userRepository;
     private final MentorRepository mentorRepository;
     private final AuditLogService auditLogService;
+    private final com.se191116.studymanagement.service.NotificationService notificationService;
 
     @Override
     public Page<WeeklyReportResponse> getReports(
@@ -157,6 +158,18 @@ public class WeeklyReportServiceImpl implements WeeklyReportService {
         WeeklyProgressReport saved = reportRepository.save(report);
         auditLogService.log(currentUser.getUserId(), "SUBMIT_WEEKLY_REPORT", "WEEKLY_REPORT", saved.getReportId(), "Report submitted");
 
+        if (saved.getAssignment() != null && saved.getAssignment().getMentor() != null && saved.getAssignment().getMentor().getUser() != null) {
+            notificationService.notifyUser(
+                    saved.getAssignment().getMentor().getUser().getUserId(),
+                    NotificationType.WEEKLY_REPORT_SUBMITTED,
+                    "Báo Cáo Tuần Mới Cần Duyệt",
+                    "Sinh viên " + (saved.getAssignment().getStudent() != null && saved.getAssignment().getStudent().getUser() != null ? saved.getAssignment().getStudent().getUser().getFullName() : "") + " đã nộp Báo cáo Tuần " + saved.getWeekNumber() + ".",
+                    "WEEKLY_REPORT",
+                    saved.getReportId(),
+                    "REPORT_SUBMITTED_" + saved.getReportId()
+            );
+        }
+
         return reportMapper.toResponse(saved);
     }
 
@@ -192,6 +205,22 @@ public class WeeklyReportServiceImpl implements WeeklyReportService {
 
         WeeklyProgressReport saved = reportRepository.save(report);
         auditLogService.log(reviewer.getUserId(), "REVIEW_WEEKLY_REPORT", "WEEKLY_REPORT", saved.getReportId(), "Status set to " + request.getStatus());
+
+        if (saved.getAssignment() != null && saved.getAssignment().getStudent() != null && saved.getAssignment().getStudent().getUser() != null) {
+            String title = saved.getStatus() == WeeklyReportStatus.REVIEWED ? "Báo Cáo Tuần Đã Được Duyệt" : "Báo Cáo Tuần Cần Chỉnh Sửa";
+            String msg = saved.getStatus() == WeeklyReportStatus.REVIEWED
+                    ? "Mentor đã phê duyệt Báo cáo Tuần " + saved.getWeekNumber() + "."
+                    : "Mentor yêu cầu chỉnh sửa Báo cáo Tuần " + saved.getWeekNumber() + ". Nhận xét: " + (request.getMentorComment() != null ? request.getMentorComment() : "");
+            notificationService.notifyUser(
+                    saved.getAssignment().getStudent().getUser().getUserId(),
+                    NotificationType.WEEKLY_REPORT_REVIEWED,
+                    title,
+                    msg,
+                    "WEEKLY_REPORT",
+                    saved.getReportId(),
+                    "REPORT_REVIEWED_" + saved.getReportId() + "_" + saved.getStatus()
+            );
+        }
 
         return reportMapper.toResponse(saved);
     }

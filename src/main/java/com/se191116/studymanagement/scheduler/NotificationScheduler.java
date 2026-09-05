@@ -12,25 +12,34 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.se191116.studymanagement.model.entity.AssignmentStatus;
+import com.se191116.studymanagement.model.entity.WeeklyReportStatus;
+import com.se191116.studymanagement.repository.WeeklyReportRepository;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class NotificationScheduler {
 
     private final InternshipAssignmentRepository assignmentRepository;
+    private final WeeklyReportRepository weeklyReportRepository;
     private final NotificationService notificationService;
 
     @Scheduled(cron = "0 0 8 * * *")
     public void sendDailyDeadlineReminders() {
         log.info("Running daily deadline reminder scheduler job...");
 
-        List<InternshipAssignment> activeAssignments = assignmentRepository.findAll();
+        List<InternshipAssignment> activeAssignments = assignmentRepository.findAll().stream()
+                .filter(a -> a.getStatus() == AssignmentStatus.IN_PROGRESS)
+                .toList();
+
         LocalDate today = LocalDate.now();
-        String dedupeDateKey = "REMINDER_WEEKLY_REPORT_" + today;
 
         for (InternshipAssignment assignment : activeAssignments) {
             if (assignment.getStudent() != null && assignment.getStudent().getUser() != null) {
                 Integer studentUserId = assignment.getStudent().getUser().getUserId();
+                String dedupeDateKey = "REMINDER_WEEKLY_REPORT_" + assignment.getAssignmentId() + "_" + today;
+
                 notificationService.notifyUser(
                         studentUserId,
                         NotificationType.WEEKLY_REPORT_DUE_SOON,

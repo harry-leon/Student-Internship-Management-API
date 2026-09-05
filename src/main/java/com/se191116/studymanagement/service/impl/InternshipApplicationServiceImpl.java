@@ -34,6 +34,7 @@ public class InternshipApplicationServiceImpl implements InternshipApplicationSe
     private final UserRepository userRepository;
     private final InternshipAssignmentRepository assignmentRepository;
     private final AuditLogService auditLogService;
+    private final com.se191116.studymanagement.service.NotificationService notificationService;
 
     @Override
     @Transactional
@@ -121,6 +122,19 @@ public class InternshipApplicationServiceImpl implements InternshipApplicationSe
 
         InternshipApplication saved = applicationRepository.save(app);
         auditLogService.log(user.getUserId(), "SUBMIT_APPLICATION", "APPLICATION", saved.getApplicationId(), "Application submitted");
+
+        java.util.List<User> admins = userRepository.findByRole(UserRole.ADMIN);
+        java.util.List<Integer> adminIds = admins.stream().map(User::getUserId).toList();
+        notificationService.notifyUsers(
+                adminIds,
+                NotificationType.APPLICATION_SUBMITTED,
+                "Đơn Đăng Ký Mới",
+                "Có đơn đăng ký thực tập mới cần phê duyệt.",
+                "APPLICATION",
+                saved.getApplicationId(),
+                "APP_SUBMITTED_" + saved.getApplicationId()
+        );
+
         return applicationMapper.toResponse(saved);
     }
 
@@ -147,17 +161,47 @@ public class InternshipApplicationServiceImpl implements InternshipApplicationSe
         }
 
         if (mentor != null) {
-            boolean assignmentExists = assignmentRepository.existsByStudentStudentIdAndPhasePhaseId(
+            java.util.Optional<InternshipAssignment> existingOpt = assignmentRepository.findByStudentStudentIdAndPhasePhaseId(
                     app.getStudent().getStudentId(), app.getPhase().getPhaseId());
 
-            if (!assignmentExists) {
-                InternshipAssignment assignment = new InternshipAssignment();
+            InternshipAssignment assignment;
+            if (existingOpt.isPresent()) {
+                assignment = existingOpt.get();
+                assignment.setMentor(mentor);
+                assignment.setCompany(company);
+                assignmentRepository.save(assignment);
+            } else {
+                assignment = new InternshipAssignment();
                 assignment.setStudent(app.getStudent());
                 assignment.setMentor(mentor);
                 assignment.setPhase(app.getPhase());
                 assignment.setCompany(company);
                 assignment.setStatus(AssignmentStatus.IN_PROGRESS);
                 assignmentRepository.save(assignment);
+            }
+
+            if (app.getStudent() != null && app.getStudent().getUser() != null) {
+                notificationService.notifyUser(
+                        app.getStudent().getUser().getUserId(),
+                        NotificationType.ASSIGNMENT_CREATED,
+                        "Phân Công Thực Tập",
+                        "Bạn đã được phân công Giảng viên hướng dẫn " + (mentor.getUser() != null ? mentor.getUser().getFullName() : "") + ".",
+                        "ASSIGNMENT",
+                        assignment.getAssignmentId(),
+                        "ASSIGNMENT_" + assignment.getAssignmentId()
+                );
+            }
+
+            if (mentor.getUser() != null) {
+                notificationService.notifyUser(
+                        mentor.getUser().getUserId(),
+                        NotificationType.ASSIGNMENT_CREATED,
+                        "Sinh Viên Mới Được Phân Công",
+                        "Sinh viên " + (app.getStudent() != null && app.getStudent().getUser() != null ? app.getStudent().getUser().getFullName() : "") + " đã được phân công cho bạn.",
+                        "ASSIGNMENT",
+                        assignment.getAssignmentId(),
+                        "ASSIGNMENT_MENTOR_" + assignment.getAssignmentId()
+                );
             }
         }
 
@@ -168,6 +212,19 @@ public class InternshipApplicationServiceImpl implements InternshipApplicationSe
 
         InternshipApplication saved = applicationRepository.save(app);
         auditLogService.log(reviewer.getUserId(), "APPROVE_APPLICATION", "APPLICATION", saved.getApplicationId(), "Approved by admin");
+
+        if (app.getStudent() != null && app.getStudent().getUser() != null) {
+            notificationService.notifyUser(
+                    app.getStudent().getUser().getUserId(),
+                    NotificationType.APPLICATION_APPROVED,
+                    "Đơn Đăng Ký Đã Được Phê Duyệt",
+                    "Đơn đăng ký thực tập của bạn đã được Admin phê duyệt.",
+                    "APPLICATION",
+                    saved.getApplicationId(),
+                    "APP_APPROVED_" + saved.getApplicationId()
+            );
+        }
+
         return applicationMapper.toResponse(saved);
     }
 
@@ -195,6 +252,19 @@ public class InternshipApplicationServiceImpl implements InternshipApplicationSe
 
         InternshipApplication saved = applicationRepository.save(app);
         auditLogService.log(reviewer.getUserId(), "REJECT_APPLICATION", "APPLICATION", saved.getApplicationId(), "Reason: " + request.getRejectionReason());
+
+        if (app.getStudent() != null && app.getStudent().getUser() != null) {
+            notificationService.notifyUser(
+                    app.getStudent().getUser().getUserId(),
+                    NotificationType.APPLICATION_REJECTED,
+                    "Đơn Đăng Ký Bị Từ Chối",
+                    "Lý do: " + request.getRejectionReason(),
+                    "APPLICATION",
+                    saved.getApplicationId(),
+                    "APP_REJECTED_" + saved.getApplicationId()
+            );
+        }
+
         return applicationMapper.toResponse(saved);
     }
 

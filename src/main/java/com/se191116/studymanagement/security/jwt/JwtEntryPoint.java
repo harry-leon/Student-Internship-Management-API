@@ -36,7 +36,7 @@ public class JwtEntryPoint implements AuthenticationEntryPoint {
         ErrorCode errorCode = resolveErrorCode(request, authException);
         String message = resolveMessage(request, authException, errorCode);
 
-        log.error("Authentication failed: {}", message);
+        log.warn("Authentication failed: method={}, path={}, reason={}", request.getMethod(), request.getRequestURI(), message);
 
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
@@ -82,3 +82,5 @@ public class JwtEntryPoint implements AuthenticationEntryPoint {
         };
     }
 }
+
+

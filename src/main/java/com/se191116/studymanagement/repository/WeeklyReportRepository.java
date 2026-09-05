@@ -18,6 +18,12 @@ public interface WeeklyReportRepository extends JpaRepository<WeeklyProgressRepo
 
     Optional<WeeklyProgressReport> findByAssignmentAssignmentIdAndWeekNumber(Integer assignmentId, Integer weekNumber);
 
+    long countByAssignmentMentorMentorIdAndStatus(Integer mentorId, WeeklyReportStatus status);
+
+    long countByAssignmentMentorMentorId(Integer mentorId);
+
+    long countByAssignmentStudentStudentId(Integer studentId);
+
     @Query("SELECT r FROM WeeklyProgressReport r " +
             "WHERE (:phaseId IS NULL OR r.assignment.phase.phaseId = :phaseId) " +
             "AND (:assignmentId IS NULL OR r.assignment.assignmentId = :assignmentId) " +

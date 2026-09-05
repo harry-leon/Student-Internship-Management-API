@@ -36,6 +36,7 @@ public class AssessmentGradingServiceImpl implements AssessmentGradingService {
     private final UserRepository userRepository;
     private final MentorRepository mentorRepository;
     private final AuditLogService auditLogService;
+    private final com.se191116.studymanagement.service.NotificationService notificationService;
 
     @Override
     public AssessmentGradingFormResponse getGradingForm(Integer assignmentId, Integer roundId, String currentUsername) {
@@ -152,6 +153,18 @@ public class AssessmentGradingServiceImpl implements AssessmentGradingService {
         submissionRepository.save(submission);
         auditLogService.log(user.getUserId(), "PUBLISH_ASSESSMENT", "SUBMISSION", submissionId, "Published submission");
 
+        if (submission.getAssignment() != null && submission.getAssignment().getStudent() != null && submission.getAssignment().getStudent().getUser() != null) {
+            notificationService.notifyUser(
+                    submission.getAssignment().getStudent().getUser().getUserId(),
+                    NotificationType.ASSESSMENT_RESULT_PUBLISHED,
+                    "Kết Quả Đánh Giá Rubric Đã Công Bố",
+                    "Kết quả đánh giá Rubric " + (submission.getRound() != null ? submission.getRound().getRoundName() : "") + " của bạn đã được công bố.",
+                    "ASSESSMENT_RESULT",
+                    submission.getSubmissionId(),
+                    "ASSESSMENT_PUBLISHED_" + submission.getSubmissionId()
+            );
+        }
+
         return getGradingForm(submission.getAssignment().getAssignmentId(), submission.getRound().getRoundId(), currentUsername);
     }
 
@@ -260,6 +273,20 @@ public class AssessmentGradingServiceImpl implements AssessmentGradingService {
 
         submissionRepository.save(submission);
         auditLogService.log(user.getUserId(), targetStatus == AssessmentSubmissionStatus.SUBMITTED ? "SUBMIT_GRADING" : "SAVE_DRAFT_GRADING", "SUBMISSION", submission.getSubmissionId(), "Score: " + weightedScoreSum);
+
+        if (targetStatus == AssessmentSubmissionStatus.SUBMITTED) {
+            List<User> admins = userRepository.findByRole(UserRole.ADMIN);
+            List<Integer> adminIds = admins.stream().map(User::getUserId).toList();
+            notificationService.notifyUsers(
+                    adminIds,
+                    NotificationType.ASSESSMENT_SCORE_SUBMITTED,
+                    "Bài Chấm Rubric Mới Cần Duyệt",
+                    "Giảng viên " + user.getFullName() + " đã nộp bài chấm Rubric cho sinh viên " + (assignment.getStudent() != null && assignment.getStudent().getUser() != null ? assignment.getStudent().getUser().getFullName() : "") + ".",
+                    "ASSESSMENT_RESULT",
+                    submission.getSubmissionId(),
+                    "ASSESSMENT_SUBMITTED_" + submission.getSubmissionId()
+            );
+        }
 
         return getGradingForm(request.getAssignmentId(), request.getRoundId(), currentUsername);
     }
