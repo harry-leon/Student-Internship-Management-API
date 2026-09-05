@@ -10,6 +10,7 @@ import com.se191116.studymanagement.model.entity.Mentor;
 import com.se191116.studymanagement.model.entity.User;
 import com.se191116.studymanagement.model.entity.UserRole;
 import com.se191116.studymanagement.model.mapper.MentorMapper;
+import com.se191116.studymanagement.repository.InternshipAssignmentRepository;
 import com.se191116.studymanagement.repository.MentorRepository;
 import com.se191116.studymanagement.repository.UserRepository;
 import com.se191116.studymanagement.security.UserPrincipal;
@@ -29,6 +30,8 @@ public class MentorServiceImpl implements MentorService {
     private final MentorRepository mentorRepository;
     private final MentorMapper mentorMapper;
     private final UserRepository userRepository;
+    private final InternshipAssignmentRepository internshipAssignmentRepository;
+
 
     @Override
     @Transactional
@@ -82,6 +85,27 @@ public class MentorServiceImpl implements MentorService {
         return mentors.map(mentorMapper::toMentorResponse);
     }
 
+    @Override
+    @Transactional
+    public void deleteMentor(Integer mentorId) {
+        Mentor mentor = mentorRepository.findById(mentorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Mentor not found with ID: " + mentorId));
+
+        boolean hasAssignments = internshipAssignmentRepository.existsByMentorMentorId(mentorId);
+        if (hasAssignments) {
+            if (mentor.getUser() != null) {
+                mentor.getUser().setIsActive(false);
+                userRepository.save(mentor.getUser());
+            }
+        } else {
+            User user = mentor.getUser();
+            mentorRepository.delete(mentor);
+            if (user != null) {
+                userRepository.delete(user);
+            }
+        }
+    }
+
     private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof UserPrincipal) {
@@ -90,3 +114,4 @@ public class MentorServiceImpl implements MentorService {
         throw new AccessDeniedException("Please login!");
     }
 }
+

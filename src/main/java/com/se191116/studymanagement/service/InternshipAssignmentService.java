@@ -11,4 +11,6 @@ public interface InternshipAssignmentService {
     InternshipAssignmentResponse getInternshipAssignmentById(Integer assignmentId);
     InternshipAssignmentResponse createInternshipAssignment(InternshipAssignmentCreateRequest request);
     InternshipAssignmentResponse updateInternshipAssignmentStatus(Integer assignmentId, InternshipAssignmentStatusUpdateRequest request);
+    void deleteInternshipAssignment(Integer assignmentId);
 }
+

@@ -11,4 +11,6 @@ public interface MentorService {
     MentorResponse updateMentor(Integer mentorId, MentorUpdateRequest request);
     MentorResponse getMentorById(Integer mentorId);
     Page<MentorResponse> getMentors(Pageable pageable);
+    void deleteMentor(Integer mentorId);
 }
+

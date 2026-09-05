@@ -41,7 +41,7 @@ public class MentorController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
     public ResponseEntity<SuccessResponse<Page<MentorResponse>>> getMentors(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -62,6 +62,15 @@ public class MentorController {
     public ResponseEntity<SuccessResponse<MentorResponse>> getMentorById(
             @PathVariable("mentor_id") Integer userId
     ) {
-        return ResponseEntity.ok(SuccessResponse.success(mentorService.getMentorById(userId), "Update mentor successfully"));
+        return ResponseEntity.ok(SuccessResponse.success(mentorService.getMentorById(userId), "Get mentor successfully"));
+    }
+
+    @DeleteMapping("/{mentor_id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<SuccessResponse<String>> deleteMentor(
+            @PathVariable("mentor_id") Integer mentorId
+    ) {
+        mentorService.deleteMentor(mentorId);
+        return ResponseEntity.ok(SuccessResponse.success("Mentor deleted successfully"));
     }
 }

@@ -73,4 +73,14 @@ public class StudentController {
     ) {
         return ResponseEntity.ok(SuccessResponse.success(studentService.getStudentDetail(studentId), "Get student detail successfully"));
     }
+
+    @DeleteMapping("/{student_id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<SuccessResponse<String>> deleteStudent(
+            @PathVariable("student_id") Integer studentId
+    ) {
+        studentService.deleteStudent(studentId);
+        return ResponseEntity.ok(SuccessResponse.success("Student deleted successfully"));
+    }
 }
+

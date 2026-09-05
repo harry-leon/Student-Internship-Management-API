@@ -168,6 +168,27 @@ public class StudentServiceImpl implements StudentService {
                 .build();
     }
 
+    @Override
+    @Transactional
+    public void deleteStudent(Integer studentId) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
+
+        boolean hasAssignments = internshipAssignmentRepository.existsByStudentStudentId(studentId);
+        if (hasAssignments) {
+            if (student.getUser() != null) {
+                student.getUser().setIsActive(false);
+                userRepository.save(student.getUser());
+            }
+        } else {
+            User user = student.getUser();
+            studentRepository.delete(student);
+            if (user != null) {
+                userRepository.delete(user);
+            }
+        }
+    }
+
     private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof UserPrincipal) {
@@ -176,3 +197,4 @@ public class StudentServiceImpl implements StudentService {
         throw new AccessDeniedException("Please login!");
     }
 }
+

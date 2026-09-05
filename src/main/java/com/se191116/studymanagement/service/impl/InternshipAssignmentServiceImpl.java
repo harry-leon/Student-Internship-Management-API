@@ -29,6 +29,8 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.Collections;
 import java.util.List;
@@ -173,6 +175,21 @@ public class InternshipAssignmentServiceImpl implements InternshipAssignmentServ
         }
     }
 
+    @Override
+    @Transactional
+    public void deleteInternshipAssignment(Integer assignmentId) {
+        InternshipAssignment assignment = internshipAssignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Internship assignment not found with id: " + assignmentId));
+
+        boolean hasSubmissions = studentSubmissionRepository.existsByAssignmentAssignmentId(assignmentId);
+        if (hasSubmissions) {
+            assignment.setStatus(AssignmentStatus.CANCELLED);
+            internshipAssignmentRepository.save(assignment);
+        } else {
+            internshipAssignmentRepository.delete(assignment);
+        }
+    }
+
     private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof UserPrincipal userPrincipal) {
@@ -181,3 +198,4 @@ public class InternshipAssignmentServiceImpl implements InternshipAssignmentServ
         throw new AccessDeniedException("Please login!");
     }
 }
+

@@ -72,4 +72,7 @@ public interface StudentSubmissionRepository extends JpaRepository<StudentSubmis
     @Modifying
     @Query("UPDATE StudentSubmission s SET s.isLatest = false WHERE s.assignment.assignmentId = :assignmentId AND s.round IS NULL")
     void markPreviousVersionsNotLatestForAssignment(@Param("assignmentId") Integer assignmentId);
+
+    boolean existsByAssignmentAssignmentId(Integer assignmentId);
 }
+
