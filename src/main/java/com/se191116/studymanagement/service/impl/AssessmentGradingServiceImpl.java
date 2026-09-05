@@ -13,6 +13,7 @@ import com.se191116.studymanagement.model.mapper.StudentSubmissionMapper;
 import com.se191116.studymanagement.repository.*;
 import com.se191116.studymanagement.service.AssessmentGradingService;
 import com.se191116.studymanagement.service.AuditLogService;
+import com.se191116.studymanagement.service.FeatureFlagService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,7 @@ public class AssessmentGradingServiceImpl implements AssessmentGradingService {
     private final com.se191116.studymanagement.service.NotificationService notificationService;
     private final StudentSubmissionRepository studentSubmissionRepository;
     private final StudentSubmissionMapper studentSubmissionMapper;
+    private final FeatureFlagService featureFlagService;
 
     @Override
     public AssessmentGradingFormResponse getGradingForm(Integer assignmentId, Integer roundId, String currentUsername) {
@@ -205,6 +207,8 @@ public class AssessmentGradingServiceImpl implements AssessmentGradingService {
     private AssessmentGradingFormResponse processGrading(AssessmentGradingRequest request, String currentUsername, AssessmentSubmissionStatus targetStatus) {
         User user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + currentUsername));
+
+        featureFlagService.requireFeatureEnabledForRole("MENTOR_SCORING_ENABLED", user.getRole());
 
         InternshipAssignment assignment = assignmentRepository.findById(request.getAssignmentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Assignment not found: " + request.getAssignmentId()));

@@ -9,11 +9,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class DashboardServiceImpl implements DashboardService {
+
+    private static final int DEFAULT_MENTOR_CAPACITY = 10;
 
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
@@ -46,6 +49,8 @@ public class DashboardServiceImpl implements DashboardService {
             kpis.put("activePhases", activePhases);
 
             details.put("message", "Admin System Overview");
+            details.put("mentorWorkloads", buildMentorWorkloads());
+            details.put("companyDistribution", buildCompanyDistribution());
         } else if (user.getRole() == UserRole.MENTOR) {
             Mentor mentor = mentorRepository.findById(user.getUserId()).orElse(null);
             Integer mentorId = mentor != null ? mentor.getMentorId() : user.getUserId();
@@ -78,5 +83,56 @@ public class DashboardServiceImpl implements DashboardService {
                 .kpis(kpis)
                 .details(details)
                 .build();
+    }
+
+    private List<Map<String, Object>> buildMentorWorkloads() {
+        List<InternshipAssignmentRepository.MentorWorkloadProjection> workloads = assignmentRepository.findMentorWorkloads();
+        if (workloads == null) {
+            return List.of();
+        }
+
+        return workloads.stream()
+                .map(row -> {
+                    long assignedCount = valueOrZero(row.getAssignedCount());
+                    int capacity = Math.max(DEFAULT_MENTOR_CAPACITY, (int) assignedCount);
+                    int percent = capacity == 0 ? 0 : (int) Math.round(assignedCount * 100.0 / capacity);
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("mentorId", row.getMentorId());
+                    item.put("name", row.getMentorName());
+                    item.put("department", row.getDepartment());
+                    item.put("current", assignedCount);
+                    item.put("max", capacity);
+                    item.put("percent", Math.min(percent, 100));
+                    item.put("tag", percent >= 100 ? "Da day" : percent >= 75 ? "On dinh" : "Con cho");
+                    return item;
+                })
+                .toList();
+    }
+
+    private List<Map<String, Object>> buildCompanyDistribution() {
+        List<InternshipAssignmentRepository.CompanyDistributionProjection> distribution = assignmentRepository.findCompanyDistribution();
+        if (distribution == null || distribution.isEmpty()) {
+            return List.of();
+        }
+
+        long total = distribution.stream()
+                .mapToLong(row -> valueOrZero(row.getStudentCount()))
+                .sum();
+
+        return distribution.stream()
+                .map(row -> {
+                    long studentCount = valueOrZero(row.getStudentCount());
+                    int percent = total == 0 ? 0 : (int) Math.round(studentCount * 100.0 / total);
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("company", row.getCompanyName());
+                    item.put("count", studentCount);
+                    item.put("percent", percent);
+                    return item;
+                })
+                .toList();
+    }
+
+    private long valueOrZero(Long value) {
+        return value == null ? 0L : value;
     }
 }

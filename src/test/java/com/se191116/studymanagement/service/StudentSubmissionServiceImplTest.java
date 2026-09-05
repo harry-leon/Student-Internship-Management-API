@@ -51,6 +51,9 @@ class StudentSubmissionServiceImplTest {
     @Mock
     private AuditLogService auditLogService;
 
+    @Mock
+    private FeatureFlagService featureFlagService;
+
     @InjectMocks
     private StudentSubmissionServiceImpl submissionService;
 

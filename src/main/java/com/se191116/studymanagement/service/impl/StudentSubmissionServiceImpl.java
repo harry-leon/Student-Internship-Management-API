@@ -11,6 +11,7 @@ import com.se191116.studymanagement.repository.InternshipAssignmentRepository;
 import com.se191116.studymanagement.repository.StudentSubmissionRepository;
 import com.se191116.studymanagement.security.UserPrincipal;
 import com.se191116.studymanagement.service.AuditLogService;
+import com.se191116.studymanagement.service.FeatureFlagService;
 import com.se191116.studymanagement.service.FileStorageService;
 import com.se191116.studymanagement.service.StudentSubmissionService;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,7 @@ public class StudentSubmissionServiceImpl implements StudentSubmissionService {
     private final StudentSubmissionMapper submissionMapper;
     private final FileStorageService fileStorageService;
     private final AuditLogService auditLogService;
+    private final FeatureFlagService featureFlagService;
 
     @Override
     @Transactional(readOnly = true)
@@ -90,6 +92,7 @@ public class StudentSubmissionServiceImpl implements StudentSubmissionService {
     @Override
     @Transactional
     public StudentSubmissionResponse submitGithub(StudentSubmissionCreateRequest request, UserPrincipal currentUser) {
+        featureFlagService.requireFeatureEnabledForRole("STUDENT_SUBMISSION_ENABLED", currentUser.getUser().getRole());
         InternshipAssignment assignment = findAssignmentOrThrow(request.getAssignmentId());
         validateStudentOwner(assignment, currentUser.getUser());
 
@@ -149,6 +152,7 @@ public class StudentSubmissionServiceImpl implements StudentSubmissionService {
             MultipartFile file,
             UserPrincipal currentUser
     ) {
+        featureFlagService.requireFeatureEnabledForRole("STUDENT_SUBMISSION_ENABLED", currentUser.getUser().getRole());
         InternshipAssignment assignment = findAssignmentOrThrow(assignmentId);
         validateStudentOwner(assignment, currentUser.getUser());
 

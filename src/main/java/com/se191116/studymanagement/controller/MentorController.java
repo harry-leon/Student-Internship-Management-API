@@ -41,7 +41,7 @@ public class MentorController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR')")
     public ResponseEntity<SuccessResponse<Page<MentorResponse>>> getMentors(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -58,7 +58,7 @@ public class MentorController {
     }
 
     @GetMapping("/{mentor_id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR')")
     public ResponseEntity<SuccessResponse<MentorResponse>> getMentorById(
             @PathVariable("mentor_id") Integer userId
     ) {
