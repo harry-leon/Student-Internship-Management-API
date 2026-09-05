@@ -8,6 +8,7 @@ import com.se191116.studymanagement.model.entity.*;
 import com.se191116.studymanagement.model.mapper.StudentSubmissionMapper;
 import com.se191116.studymanagement.repository.AssessmentRoundRepository;
 import com.se191116.studymanagement.repository.InternshipAssignmentRepository;
+import com.se191116.studymanagement.repository.StoredFileRepository;
 import com.se191116.studymanagement.repository.StudentSubmissionRepository;
 import com.se191116.studymanagement.security.UserPrincipal;
 import com.se191116.studymanagement.service.AuditLogService;
@@ -38,6 +39,7 @@ public class StudentSubmissionServiceImpl implements StudentSubmissionService {
     private final AssessmentRoundRepository roundRepository;
     private final StudentSubmissionMapper submissionMapper;
     private final FileStorageService fileStorageService;
+    private final StoredFileRepository storedFileRepository;
     private final AuditLogService auditLogService;
     private final FeatureFlagService featureFlagService;
 
@@ -188,6 +190,24 @@ public class StudentSubmissionServiceImpl implements StudentSubmissionService {
                 .build();
 
         StudentSubmission saved = submissionRepository.save(submission);
+
+        try {
+            storedFileRepository.save(StoredFile.builder()
+                    .ownerUserId(currentUser.getUser().getUserId())
+                    .linkedEntityType("STUDENT_SUBMISSION")
+                    .linkedEntityId(saved.getSubmissionId())
+                    .storageProvider("LOCAL")
+                    .objectKey("submissions/" + storedFilename)
+                    .originalFileName(originalFilename)
+                    .storedFileName(storedFilename)
+                    .contentType(file.getContentType() != null ? file.getContentType() : "application/zip")
+                    .fileExtension("zip")
+                    .fileSize(file.getSize())
+                    .status("ACTIVE")
+                    .build());
+        } catch (Exception e) {
+            log.warn("Could not save StoredFile record for submission ID={}: {}", saved.getSubmissionId(), e.getMessage());
+        }
 
         log.info("Student {} uploaded ZIP work for assignment {} (round: {}, version: {}, size: {} bytes)",
                 currentUser.getUser().getUserId(), assignment.getAssignmentId(),

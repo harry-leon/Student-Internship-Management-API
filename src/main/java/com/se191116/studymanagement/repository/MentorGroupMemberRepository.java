@@ -18,6 +18,9 @@ public interface MentorGroupMemberRepository extends JpaRepository<MentorGroupMe
     boolean existsByGroupGroupIdAndStudentStudentIdAndStatus(
             Integer groupId, Integer studentId, MemberStatus status);
 
+    boolean existsByGroupMentorMentorIdAndStudentStudentIdAndStatus(
+            Integer mentorId, Integer studentId, MemberStatus status);
+
     long countByGroupGroupIdAndStatus(Integer groupId, MemberStatus status);
 
     @EntityGraph(attributePaths = {"student", "student.user"})

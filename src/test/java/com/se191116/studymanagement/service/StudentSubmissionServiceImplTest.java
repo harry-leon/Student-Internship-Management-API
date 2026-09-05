@@ -49,6 +49,9 @@ class StudentSubmissionServiceImplTest {
     private FileStorageService fileStorageService;
 
     @Mock
+    private com.se191116.studymanagement.repository.StoredFileRepository storedFileRepository;
+
+    @Mock
     private AuditLogService auditLogService;
 
     @Mock

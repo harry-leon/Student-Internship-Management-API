@@ -111,11 +111,9 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
-        if (user.getAvatarUrl() != null) {
-            fileStorageService.deleteAvatar(user.getAvatarUrl());
-        }
-
-        String avatarUrl = fileStorageService.storeAvatar(file);
+        com.se191116.studymanagement.model.entity.StoredFile storedFile =
+                fileStorageService.storeFile(file, userId, "USER_AVATAR", userId);
+        String avatarUrl = "/api/files/" + storedFile.getFileId() + "/download";
         user.setAvatarUrl(avatarUrl);
         User updated = userRepository.save(user);
         auditLogService.log(userId, "UPLOAD_AVATAR", "USER", userId, "Avatar updated: " + avatarUrl);
