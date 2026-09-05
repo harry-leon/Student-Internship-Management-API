@@ -37,7 +37,11 @@ public class AuthServiceImpl implements AuthService {
         );
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
-        auditLogService.log(userPrincipal.getUser().getUserId(), "LOGIN", "USER", userPrincipal.getUser().getUserId(), "Local login successful");
+        try {
+            auditLogService.log(userPrincipal.getUser().getUserId(), "LOGIN", "USER", userPrincipal.getUser().getUserId(), "Local login successful");
+        } catch (Exception e) {
+            // Silently catch audit log failure to not break authentication
+        }
 
         return LoginResponse.builder()
                 .username(userPrincipal.getUsername())

@@ -25,17 +25,28 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedUserIfNotFound(String username, String email, String password, String fullName, UserRole role) {
-        if (userRepository.findByUsername(username).isEmpty()) {
-            User user = User.builder()
-                    .username(username)
-                    .email(email)
-                    .passwordHash(passwordEncoder.encode(password))
-                    .fullName(fullName)
-                    .role(role)
-                    .isActive(true)
-                    .build();
-            userRepository.save(user);
-            log.info("Default {} account created: username='{}', password='{}'", role, username, password);
-        }
+        userRepository.findByUsername(username).ifPresentOrElse(
+                user -> {
+                    user.setPasswordHash(passwordEncoder.encode(password));
+                    user.setEmail(email);
+                    user.setFullName(fullName);
+                    user.setRole(role);
+                    user.setIsActive(true);
+                    userRepository.save(user);
+                    log.info("Default {} account updated: username='{}', password='{}'", role, username, password);
+                },
+                () -> {
+                    User user = User.builder()
+                            .username(username)
+                            .email(email)
+                            .passwordHash(passwordEncoder.encode(password))
+                            .fullName(fullName)
+                            .role(role)
+                            .isActive(true)
+                            .build();
+                    userRepository.save(user);
+                    log.info("Default {} account created: username='{}', password='{}'", role, username, password);
+                }
+        );
     }
 }

@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -62,9 +64,13 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_INPUT_DATA, e.getMessage(), null);
     }
 
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException e) {
-        return buildResponse(HttpStatus.UNAUTHORIZED, ErrorCode.BAD_CREDENTIALS, "Invalid username or password", null);
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException e) {
+        String message = "Invalid username or password";
+        if (e instanceof DisabledException) {
+            message = "Account is disabled";
+        }
+        return buildResponse(HttpStatus.UNAUTHORIZED, ErrorCode.BAD_CREDENTIALS, message, null);
     }
 
     @ExceptionHandler(AccessDeniedException.class)

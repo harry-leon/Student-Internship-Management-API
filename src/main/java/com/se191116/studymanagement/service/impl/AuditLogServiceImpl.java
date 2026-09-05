@@ -9,6 +9,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -17,6 +20,7 @@ public class AuditLogServiceImpl implements AuditLogService {
     private final AuditLogRepository auditLogRepository;
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void log(Integer actorId, String action, String targetType, Integer targetId, String metadata) {
         try {
             AuditLog auditLog = AuditLog.builder()
