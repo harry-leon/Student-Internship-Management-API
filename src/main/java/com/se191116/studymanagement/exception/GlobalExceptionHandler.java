@@ -64,6 +64,12 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorResponse> handleApplicationBadRequestException(BadRequestException e, HttpServletRequest request) {
+        log.warn("Bad request: method={}, path={}, reason={}", request.getMethod(), request.getRequestURI(), e.getMessage());
+        return buildResponse(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_INPUT_DATA, e.getMessage(), null);
+    }
+
     @ExceptionHandler(ResourceConflictException.class)
     public ResponseEntity<ErrorResponse> handleResourceConflictException(ResourceConflictException e, HttpServletRequest request) {
         log.warn("Resource conflict: method={}, path={}, reason={}", request.getMethod(), request.getRequestURI(), e.getMessage());
@@ -73,7 +79,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e, HttpServletRequest request) {
         log.warn("Business rule rejected request: method={}, path={}, reason={}", request.getMethod(), request.getRequestURI(), e.getMessage());
-        return buildResponse(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_INPUT_DATA, e.getMessage(), null);
+        return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, ErrorCode.BUSINESS_RULE_VIOLATION, e.getMessage(), null);
     }
 
     @ExceptionHandler(AuthenticationException.class)
@@ -130,4 +136,3 @@ public class GlobalExceptionHandler {
                         .build());
     }
 }
-

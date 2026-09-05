@@ -33,7 +33,7 @@ public class DataInitializer implements CommandLineRunner {
                     user.setRole(role);
                     user.setIsActive(true);
                     userRepository.save(user);
-                    log.info("Default {} account updated: username='{}', password='{}'", role, username, password);
+                    log.info("Default {} account updated: username='{}'", role, username);
                 },
                 () -> {
                     User user = User.builder()
@@ -45,7 +45,7 @@ public class DataInitializer implements CommandLineRunner {
                             .isActive(true)
                             .build();
                     userRepository.save(user);
-                    log.info("Default {} account created: username='{}', password='{}'", role, username, password);
+                    log.info("Default {} account created: username='{}'", role, username);
                 }
         );
     }
