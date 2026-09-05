@@ -32,4 +32,6 @@ public interface InternshipAssignmentRepository extends JpaRepository<Internship
     Optional<InternshipAssignment> findFirstByStudentStudentId(Integer studentId);
 
     boolean existsByStudentStudentIdAndPhasePhaseId(Integer studentId, Integer phaseId);
+
+    boolean existsByMentorMentorIdAndStudentStudentId(Integer mentorId, Integer studentId);
 }

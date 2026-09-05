@@ -23,12 +23,29 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.se191116.studymanagement.model.dto.response.*;
+import com.se191116.studymanagement.model.entity.*;
+import com.se191116.studymanagement.model.mapper.*;
+import com.se191116.studymanagement.repository.*;
+import com.se191116.studymanagement.service.AssessmentGradingService;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class StudentServiceImpl implements StudentService {
     private final StudentRepository studentRepository;
     private final StudentMapper studentMapper;
     private final UserRepository userRepository;
+    private final InternshipAssignmentRepository internshipAssignmentRepository;
+    private final InternshipAssignmentMapper internshipAssignmentMapper;
+    private final StudentSubmissionRepository studentSubmissionRepository;
+    private final StudentSubmissionMapper studentSubmissionMapper;
+    private final WeeklyReportRepository weeklyReportRepository;
+    private final WeeklyReportMapper weeklyReportMapper;
+    private final AssessmentGradingService assessmentGradingService;
 
     @Override
     @Transactional
@@ -90,6 +107,65 @@ public class StudentServiceImpl implements StudentService {
             students = studentRepository.findAll(pageable);
         }
         return students.map(studentMapper::toStudentResponse);
+    }
+
+    @Override
+    public StudentDetailResponse getStudentDetail(Integer studentId) {
+        User currentUser = getCurrentUser();
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with ID: " + studentId));
+
+        // Role authorization check
+        if (currentUser.getRole() == UserRole.STUDENT) {
+            if (student.getUser() == null || !currentUser.getUserId().equals(student.getUser().getUserId())) {
+                throw new AccessDeniedException("You are not authorized to view other students' details");
+            }
+        } else if (currentUser.getRole() == UserRole.MENTOR) {
+            boolean isAssigned = internshipAssignmentRepository.existsByMentorMentorIdAndStudentStudentId(
+                    currentUser.getUserId(), studentId);
+            if (!isAssigned) {
+                throw new AccessDeniedException("You are not authorized to view students not assigned to you");
+            }
+        }
+
+        StudentResponse studentResp = studentMapper.toStudentResponse(student);
+
+        InternshipAssignment assignment = internshipAssignmentRepository.findFirstByStudentStudentId(studentId).orElse(null);
+        InternshipAssignmentResponse assignmentResp = assignment != null ? internshipAssignmentMapper.toResponse(assignment) : null;
+
+        StudentSubmissionResponse latestSubmissionResp = null;
+        Page<StudentSubmission> latestSubmissionPage = studentSubmissionRepository.findByStudent(
+                studentId, null, null, PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "submittedAt")));
+        if (!latestSubmissionPage.isEmpty()) {
+            latestSubmissionResp = studentSubmissionMapper.toResponse(latestSubmissionPage.getContent().get(0));
+        }
+
+        List<WeeklyReportResponse> recentReports = List.of();
+        if (assignment != null) {
+            Page<WeeklyProgressReport> reportPage = weeklyReportRepository.searchReports(
+                    null, assignment.getAssignmentId(), studentId, null, null, null,
+                    PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "weekNumber")));
+            recentReports = reportPage.getContent().stream()
+                    .map(weeklyReportMapper::toResponse)
+                    .toList();
+        }
+
+        List<AssessmentGradingFormResponse> gradingSummaries = List.of();
+        if (assignment != null) {
+            try {
+                gradingSummaries = assessmentGradingService.getResults(null, assignment.getAssignmentId(), currentUser.getUsername());
+            } catch (Exception e) {
+                // If grading not found or unauthorized for unpublished results, leave empty
+            }
+        }
+
+        return StudentDetailResponse.builder()
+                .student(studentResp)
+                .currentAssignment(assignmentResp)
+                .latestSubmission(latestSubmissionResp)
+                .recentReports(recentReports)
+                .gradingSummaries(gradingSummaries)
+                .build();
     }
 
     private User getCurrentUser() {

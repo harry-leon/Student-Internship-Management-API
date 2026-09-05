@@ -11,4 +11,5 @@ public interface StudentService {
     StudentResponse getStudentById(Integer studentId);
     StudentResponse updateStudent(Integer studentId, StudentUpdateRequest request);
     StudentResponse createStudent(StudentCreateRequest request);
+    com.se191116.studymanagement.model.dto.response.StudentDetailResponse getStudentDetail(Integer studentId);
 }

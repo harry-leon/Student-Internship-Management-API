@@ -3,6 +3,7 @@ package com.se191116.studymanagement.controller;
 import com.se191116.studymanagement.model.dto.request.StudentCreateRequest;
 import com.se191116.studymanagement.model.dto.request.StudentUpdateRequest;
 import com.se191116.studymanagement.model.dto.response.SuccessResponse;
+import com.se191116.studymanagement.model.dto.response.StudentDetailResponse;
 import com.se191116.studymanagement.model.dto.response.StudentResponse;
 import com.se191116.studymanagement.service.StudentService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -62,6 +63,14 @@ public class StudentController {
     public ResponseEntity<SuccessResponse<StudentResponse>> getStudentById(
             @PathVariable("student_id") Integer userId
     ) {
-        return ResponseEntity.ok(SuccessResponse.success(studentService.getStudentById(userId), "Update student successfully"));
+        return ResponseEntity.ok(SuccessResponse.success(studentService.getStudentById(userId), "Get student successfully"));
+    }
+
+    @GetMapping("/{student_id}/detail")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
+    public ResponseEntity<SuccessResponse<StudentDetailResponse>> getStudentDetail(
+            @PathVariable("student_id") Integer studentId
+    ) {
+        return ResponseEntity.ok(SuccessResponse.success(studentService.getStudentDetail(studentId), "Get student detail successfully"));
     }
 }
