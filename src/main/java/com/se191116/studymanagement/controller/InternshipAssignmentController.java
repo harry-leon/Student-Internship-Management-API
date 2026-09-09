@@ -1,0 +1,97 @@
+package com.se191116.studymanagement.controller;
+
+import com.se191116.studymanagement.model.dto.request.InternshipAssignmentCreateRequest;
+import com.se191116.studymanagement.model.dto.request.InternshipAssignmentStatusUpdateRequest;
+import com.se191116.studymanagement.model.dto.response.SuccessResponse;
+import com.se191116.studymanagement.model.dto.response.InternshipAssignmentResponse;
+import com.se191116.studymanagement.service.InternshipAssignmentService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+
+@RestController
+@RequestMapping("/api/internship_assignments")
+@SecurityRequirement(name = "bearerAuth")
+@RequiredArgsConstructor
+public class InternshipAssignmentController {
+    private final InternshipAssignmentService internshipAssignmentService;
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
+    @GetMapping
+    public ResponseEntity<SuccessResponse<Page<InternshipAssignmentResponse>>> getInternshipAssignments(
+            @RequestParam(required = false) Integer userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "assignmentId") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection
+    ) {
+        Sort sort = sortDirection.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return ResponseEntity.ok(SuccessResponse.success(
+                internshipAssignmentService.getInternshipAssignments(userId, pageable),
+                "Internship assignments retrieved successfully"
+        ));
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
+    @GetMapping("/{assignment_id}")
+    public ResponseEntity<SuccessResponse<InternshipAssignmentResponse>> getInternshipAssignmentById(
+            @PathVariable("assignment_id") Integer assignmentId
+    ) {
+        return ResponseEntity.ok(SuccessResponse.success(
+                internshipAssignmentService.getInternshipAssignmentById(assignmentId),
+                "Internship assignment retrieved successfully"
+        ));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping
+    public ResponseEntity<SuccessResponse<InternshipAssignmentResponse>> createInternshipAssignment(
+            @RequestBody @Valid InternshipAssignmentCreateRequest request
+    ) {
+        return ResponseEntity.ok(SuccessResponse.success(
+                internshipAssignmentService.createInternshipAssignment(request),
+                "Internship assignment created successfully"
+        ));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{assignment_id}/status")
+    public ResponseEntity<SuccessResponse<InternshipAssignmentResponse>> updateInternshipAssignmentStatus(
+            @PathVariable("assignment_id") Integer assignmentId,
+            @RequestBody @Valid InternshipAssignmentStatusUpdateRequest request
+    ) {
+        return ResponseEntity.ok(SuccessResponse.success(
+                internshipAssignmentService.updateInternshipAssignmentStatus(assignmentId, request),
+                "Internship assignment status updated successfully"
+        ));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{assignment_id}")
+    public ResponseEntity<SuccessResponse<String>> deleteInternshipAssignment(
+            @PathVariable("assignment_id") Integer assignmentId
+    ) {
+        internshipAssignmentService.deleteInternshipAssignment(assignmentId);
+        return ResponseEntity.ok(SuccessResponse.success("Internship assignment deleted successfully"));
+    }
+}
+
